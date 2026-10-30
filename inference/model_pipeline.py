@@ -18,24 +18,45 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 
 def generate_review(essay_text: str) -> dict:
-    # 1. 更严苛的系统提示词
-    system_prompt = "You are an English teacher. Grade the essay. Output ONLY a valid JSON object with NO markdown formatting, NO explanations, and NO other text. "
-    system_prompt += 'The JSON must have exactly these keys: {"scores": {"grammar": 0-5, "vocabulary": 0-5, "structure": 0-5, "coherence": 0-5, "content": 0-5, "overall": 0-5}, "overall_feedback": "...", "errors": [{"type": "...", "original": "...", "corrected": "...", "explanation": "..."}]}'
+    # 【核心修改1】：在 Prompt 中给出包含真实数字的 JSON 示例，这样小模型才知道该怎么抄
+    system_prompt = """你是一个专业的英语作文批改助手。请严格按以下 JSON 格式输出，不要输出任何其他解释文字：
+{
+  "scores": {
+    "grammar": 3,
+    "vocabulary": 4,
+    "structure": 3,
+    "coherence": 4,
+    "content": 3,
+    "overall": 3.4
+  },
+  "overall_feedback": "文章结构清晰，但存在一些语法错误。",
+  "errors": [
+    {
+      "type": "grammar",
+      "original": "students prefers",
+      "corrected": "students prefer",
+      "explanation": "主谓一致问题，复数主语应使用动词原形。"
+    }
+  ]
+}"""
     
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": "Essay: " + essay_text + "\n\nJSON Output:"}
+        {"role": "user", "content": "请批改这篇作文：\n" + essay_text}
     ]
     
     text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
     print("\n--- 模型正在思考中，请稍候 ---")
-    # 2. 使用 do_sample=False 来消除 temperature 的警告（贪心解码，更适合生成固定格式）
+    
+    # 【核心修改2】：修复 temperature 警告，使用 do_sample=True 搭配 temperature
+    # do_sample=True 表示允许模型根据概率采样，temperature 越低（如 0.1），输出越确定、越死板，越容易生成 JSON
     generated_ids = model.generate(
         **model_inputs,
         max_new_tokens=256, 
-        do_sample=False, 
+        do_sample=True,           # 开启采样
+        temperature=0.1,          # 降低随机性
         repetition_penalty=1.1, 
         pad_token_id=tokenizer.eos_token_id
     )
@@ -48,8 +69,7 @@ def generate_review(essay_text: str) -> dict:
     print("\n--- 模型原始输出 ---")
     print(raw_output)
     
-    # 3. 针对原模型容易输出 markdown 代码块（```json ... ```）的情况，做预处理
-    # 你的 validator.py 里的正则已经处理了这个，但我们可以在这里再兜底一次
+    # 预处理：去掉可能存在的 markdown 代码块符号
     clean_output = raw_output.replace("```json", "").replace("```", "").strip()
     
     print("\n--- 校验后的结果 ---")
