@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Teacher feedback v1 (no synthetic scores)",
+  "type": "object",
+  "required": ["summary", "feedback", "suggestions"],
+  "additionalProperties": false,
+  "properties": {
+    "summary": {"type": "string", "pattern": "\\S", "maxLength": 3000},
+    "feedback": {
+      "type": "array", "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["type", "kind", "original", "corrected", "explanation"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"enum": ["grammar", "vocabulary", "syntax", "conventions", "coherence"]},
+          "kind": {"enum": ["error", "improvement"]},
+          "original": {"type": "string", "pattern": "\\S", "maxLength": 3000},
+          "corrected": {"type": "string", "maxLength": 3000},
+          "explanation": {"type": "string", "pattern": "\\S", "maxLength": 1500}
+        }
+      }
+    },
+    "suggestions": {
+      "type": "array", "maxItems": 5,
+      "items": {"type": "string", "pattern": "\\S", "maxLength": 1500}
+    }
+  }
+}

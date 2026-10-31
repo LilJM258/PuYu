@@ -1,0 +1,11 @@
+{
+  "model": "deepseek-flash",
+  "currency": "USD",
+  "checked_date": "2026-10-30",
+  "source_url": "https://api-docs.deepseek.com/quick_start/pricing/",
+  "per_million_tokens": {
+    "off_peak": {"input_cache_hit": 0.003, "input_cache_miss": 0.15, "output": 0.6},
+    "peak": {"input_cache_hit": 0.006, "input_cache_miss": 0.3, "output": 1.2}
+  },
+  "note": "Record both tariff scenarios; do not claim either is the actual bill. Account discounts, credits, failed requests and pricing changes require reconciliation with the provider bill."
+}
