@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.env
+.env.*
+!.env.example
+configs/teacher.local.json
+data/raw/
+data/processed/
+data/synthetic/
+results/runs/
+results/test_temp/
+results/review_week1/
+*.log

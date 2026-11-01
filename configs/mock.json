@@ -1,0 +1,14 @@
+{
+  "provider": "mock",
+  "model": "fixture-only-not-a-teacher",
+  "prompt_version": "feedback_v1",
+  "prompt_file": "prompts/feedback_v1.txt",
+  "feedback_language": "English",
+  "fixtures_file": "../examples/demo_fixtures.json",
+  "max_input_chars": 24000,
+  "max_attempts": 3,
+  "timeout_seconds": 60,
+  "retry_seconds": 1,
+  "request": {"temperature": 0.2, "max_tokens": 2048, "response_format": {"type": "json_object"}},
+  "pricing": null
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Essay input v1",
+  "type": "object",
+  "required": ["id", "source", "split", "input", "dataset_version"],
+  "properties": {
+    "id": {"type": "string", "pattern": "\\S"},
+    "source": {"type": "string", "pattern": "\\S"},
+    "split": {"enum": ["train", "validation", "test", "debug"]},
+    "input": {"type": "string", "pattern": "\\S"},
+    "dataset_version": {"type": "string", "pattern": "\\S"},
+    "group_id": {"type": "string", "pattern": "\\S"},
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": true
+}
