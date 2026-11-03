@@ -1,0 +1,22 @@
+{
+  "provider": "chat_completions",
+  "base_url": "https://REPLACE_WITH_PROVIDER_BASE_URL",
+  "model": "REPLACE_WITH_MODEL_ID",
+  "api_key_env": "TEACHER_API_KEY",
+  "prompt_version": "feedback_leaf_v1",
+  "prompt_file": "prompts/feedback_leaf_v1.txt",
+  "feedback_language": "English",
+  "max_input_chars": 24000,
+  "max_attempts": 1,
+  "timeout_seconds": 60,
+  "retry_seconds": 2,
+  "request": {
+    "temperature": 0.2,
+    "max_tokens": 2048,
+    "response_format": {
+      "type": "json_object"
+    }
+  },
+  "pricing": null,
+  "feedback_format": "leaf_v1"
+}

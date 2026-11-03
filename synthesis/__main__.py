@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser(description="3号：教师反馈合成与筛选（mock 可离线运行）")
     commands = parser.add_subparsers(dest="command", required=True)
     demo = commands.add_parser("demo", help="离线验证；不调用教师，不产生真实质量指标")
-    demo.add_argument("--run-dir", default="results/runs/demo")
+    demo.add_argument("--run-dir", default="results/runs/demo_leaf_v1")
     gen = commands.add_parser("generate", help="生成并保存原始响应；同一配置可断点续跑")
     gen.add_argument("--input", required=True)
     gen.add_argument("--config", required=True)
@@ -43,10 +43,10 @@ def main():
     try:
         if args.command == "demo":
             run_dir = Path(args.run_dir)
-            fixtures = read_json(ROOT / "examples" / "demo_fixtures.json")
+            fixtures = read_json(ROOT / "examples" / "demo_leaf_fixtures.json")
             input_path = run_dir / "demo_input.jsonl"
             write_jsonl(input_path, [f["input"] for f in fixtures])
-            generated = generate(input_path, ROOT / "configs" / "mock.json", run_dir)
+            generated = generate(input_path, ROOT / "configs" / "mock_leaf.json", run_dir)
             filtered = filter_run(run_dir)
             audit_path = run_dir / "human_audit.jsonl"
             if not audit_path.exists():

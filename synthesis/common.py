@@ -177,7 +177,19 @@ def validate_inputs(rows, provider, max_chars, reserved=()):
             raise ValueError("Reserved-set overlap: {}".format(key))
 
 
-def evaluate_response(response):
+LEAF_INSTRUCTION = "Provide feedback on the following English essay. Return a JSON object with a feedback string.\n\n"
+
+
+def feedback_schema(config):
+    mode = config.get("feedback_format", "structured_v1")
+    if mode not in ("structured_v1", "leaf_v1"):
+        raise ValueError("Unknown feedback_format")
+    if mode == "leaf_v1" and config.get("feedback_language") != "English":
+        raise ValueError("LEAF feedback requires English")
+    return "feedback_leaf" if mode == "leaf_v1" else "feedback"
+
+
+def evaluate_response(response, schema_name="feedback"):
     """Keep the raw response intact; never repair an answer into a training label."""
     errors = []
     parsed = None
@@ -196,7 +208,7 @@ def evaluate_response(response):
             except ValueError:
                 errors.append("invalid_json")
             else:
-                if schema_errors(parsed, "feedback"):
+                if schema_errors(parsed, schema_name):
                     errors.append("schema_invalid")
     except (KeyError, IndexError, TypeError):
         errors.append("invalid_response_envelope")
@@ -205,6 +217,11 @@ def evaluate_response(response):
 
 def quality_checks(essay, output):
     """Deterministic rules are quality signals, not semantic correctness proof."""
+    if isinstance(output.get("feedback"), str):
+        # Prose has no machine-readable edit spans. Do not invent quote metrics
+        # or claim that deterministic checks prove its correctness.
+        return {"reasons": [], "warnings": ["human_content_review_required"],
+                "locations": [], "quote_count": 0, "matched_quotes": 0}
     reasons, warnings, locations = [], [], []
     seen = set()
     matched = 0

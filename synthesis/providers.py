@@ -6,7 +6,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from .common import canonical, read_json
+from .common import canonical, read_json, feedback_schema, LEAF_INSTRUCTION
 
 
 class ProviderError(Exception):
@@ -60,7 +60,8 @@ class ChatProvider:
         payload = dict(self.config["request"])
         payload.update({"model": self.config["model"], "stream": False, "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": canonical({"essay": row["input"]})}]})
+            {"role": "user", "content": (LEAF_INSTRUCTION + row["input"]
+                if feedback_schema(self.config) == "feedback_leaf" else canonical({"essay": row["input"]}))}]})
         request = urllib.request.Request(self.endpoint, data=canonical(payload).encode("utf-8"),
                                          headers={"Authorization": "Bearer " + self.key,
                                                   "Content-Type": "application/json"}, method="POST")

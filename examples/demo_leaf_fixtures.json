@@ -1,0 +1,51 @@
+[
+  {
+    "input": {
+      "id": "leaf_demo_1",
+      "source": "self_authored_demo",
+      "split": "debug",
+      "dataset_version": "leaf_demo_v1",
+      "input": "Many students prefers online learning."
+    },
+    "output": {
+      "feedback": "Your position is clear. Change students prefers to students prefer because students is plural. Explain one benefit with an example."
+    }
+  },
+  {
+    "input": {
+      "id": "leaf_demo_2",
+      "source": "self_authored_demo",
+      "split": "debug",
+      "dataset_version": "leaf_demo_v1",
+      "input": "Reading every day helps me learn new words."
+    },
+    "output": {
+      "feedback": "You clearly describe a useful learning habit. Adding an example of a word you learned would make the idea more concrete."
+    }
+  },
+  {
+    "input": {
+      "id": "leaf_demo_3",
+      "source": "self_authored_demo",
+      "split": "debug",
+      "dataset_version": "leaf_demo_v1",
+      "input": "I like the library."
+    },
+    "output": {
+      "feedback": " "
+    }
+  },
+  {
+    "input": {
+      "id": "leaf_demo_4",
+      "source": "self_authored_demo",
+      "split": "debug",
+      "dataset_version": "leaf_demo_v1",
+      "input": "We grow trees."
+    },
+    "output": {
+      "feedback": "A clear statement.",
+      "summary": "Unexpected field"
+    }
+  }
+]

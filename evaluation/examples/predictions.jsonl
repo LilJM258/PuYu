@@ -1,0 +1,3 @@
+{"id": "synthetic_metric_example_1", "scores": {"cohesion": 1.5, "syntax": 1.5, "vocabulary": 1.5, "phraseology": 1.5, "grammar": 1.5, "conventions": 1.5}}
+{"id": "synthetic_metric_example_2", "scores": {"cohesion": 3.7, "syntax": 3.7, "vocabulary": 3.7, "phraseology": 3.7, "grammar": 8, "conventions": 3.7}}
+{"id": "synthetic_metric_example_3", "scores": {"cohesion": 4.5, "syntax": 4.5, "vocabulary": 4.5, "phraseology": 4.5, "grammar": 4.5, "conventions": 4.5}}

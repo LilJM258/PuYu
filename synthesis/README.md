@@ -1,80 +1,48 @@
-# 成员 3：教师反馈合成与质量检查
+# 教师反馈合成：LEAF 格式
 
-本模块用于英语作文反馈试生成：调用教师模型，保存原始响应，检查 JSON/Schema/引用，产生质量与 token/估算费用记录。Python 3.9+；离线验证不需要 GPU 或 API Key。
+2026-11-03 起，新批次使用 `{"feedback":"一段英文反馈"}`，与人工 LEAF 样本的目标结构及训练任务指令一致。不要求独立的总体评价、原文片段、改法或解释字段。
 
-## 快速离线验证
+## 离线验证
 
-在仓库根目录执行：
-
-```powershell
+```sh
 python -m pip install -r requirements-synthesis.txt
-python -X utf8 -m synthesis demo
-python -X utf8 -m unittest discover -s tests -q
+python -m synthesis demo
+python -m unittest discover -s tests -q
 ```
 
-demo 使用 examples/demo_fixtures.json 中自写作文和预设响应，不联网。预设 10 条中，8 条格式合格、6 条规则通过，仅用于程序验证，不是教师质量指标。重复执行跳过已保存的响应；修改代码、Prompt 或配置后使用新的运行目录。
+默认 demo 使用 configs/mock_leaf.json 和 examples/demo_leaf_fixtures.json，不调用 API，不产生真实质量结论；4 个预设样例中 2 个格式合格，D 内容审核仍为 pending。
 
-## 目录及接口
+## 新批次配置与生成
 
-| 路径 | 用途 |
-|---|---|
-| synthesis/ | 生成、校验、筛选、抽检和等量 C/D 候选导出 |
-| schemas/ | 作文输入和反馈 JSON Schema |
-| configs/prompts/ | feedback_v1～v4 提示词，保留版本 |
-| configs/teacher.example.json | 通用 Chat Completions 配置模板 |
-| configs/deepseek*.json | 已验证的教师设置及报价快照，不含密钥 |
-| scripts/ | 下载固定版本、数据检查、试生成、定位辅助与本地汇总 |
-| tests/ | 使用本地样例和模拟服务的回归测试 |
-| docs/member3/ | 数据接口、人工审核和第一周统计说明 |
+复制 configs/teacher.leaf.example.json 为 configs/teacher.local.json，填写 HTTPS 接口和教师模型，保持 feedback_format=leaf_v1 和 feedback_language=English。DeepSeek 新格式配置为 configs/deepseek_leaf.json；服务可用性和价格仍需在真实调用前确认。密钥通过 TEACHER_API_KEY 环境变量传入，程序不自动读取 .env。
 
-此模块的输出 Schema 用于 essay_feedback 训练任务，包含 summary、feedback、suggestions；与仓库现有整份网页报告的 scores/errors 接口用途不同。评分标签沿用源数据；接口集成由 1、2、5 号确认。
-
-## 教师配置
-
-真实调用前，复制模板为 configs/teacher.local.json，填写账号对应的接口地址和模型名称。当前公共 DeepSeek 设置以服务端模型名 deepseek-flash 调用，报价文件是历史快照，后续批次应核对服务商文档及账户账单。
-
-密钥通过配置的环境变量 TEACHER_API_KEY 读取；可在用户自己的 PowerShell 中输入：
-
-```powershell
-$env:TEACHER_API_KEY = [System.Net.NetworkCredential]::new('', (Read-Host 'Teacher API Key' -AsSecureString)).Password
+```sh
+python -m synthesis generate --input data/processed/pilot_train.jsonl --reserved data/processed/reserved.jsonl --config configs/teacher.local.json --run-dir results/runs/leaf_pilot_v1 --max-new 5
+python -m synthesis filter --run-dir results/runs/leaf_pilot_v1
+python -m synthesis audit --run-dir results/runs/leaf_pilot_v1 --output results/runs/leaf_pilot_v1/audit.jsonl --count 20
 ```
 
-密钥只用于当前终端及其启动的进程。配置模板、日志和训练标签不保存密钥。程序不会自动读取 .env；若小组使用 .env，请先在本机加载到环境变量，再运行脚本。
+真实 generate 会产生 API 用量。示例输入需由训练作文准备，不能直接复制路径后假定数据存在。原始响应和版本指纹保留，格式失败不修复为合格标签，不重生成到通过。
 
-## 通用训练作文试生成
+## 筛选和训练导出
 
-输入格式见 [数据接口](../docs/member3/data-contract.md)，正式输入必须为 train，保留 source/id/dataset_version。示例路径由成员 2 交接后准备：
+输入与输出规范见 docs/member3/data-contract.md 及 schemas/feedback_leaf.schema.json。
 
-```powershell
-python -X utf8 -m synthesis generate --input data/processed/pilot_train.jsonl --config configs/teacher.local.json --reserved data/processed/reserved.jsonl --run-dir results/runs/pilot_v1 --max-new 5
-python -X utf8 -m synthesis filter --run-dir results/runs/pilot_v1
-python -X utf8 -m synthesis audit --run-dir results/runs/pilot_v1 --output results/runs/pilot_v1/audit.jsonl --count 20
+C 是格式合格池；整段反馈不能继续使用旧的引用匹配、位置唯一性和局部改法规则。程序对新格式提示需要人工内容审核，quote_match_rate 不适用。filtered/D_pool.jsonl 只表示待审核候选。
+
+人工填写 audit.jsonl：检查判断是否正确、建议是否具体、是否忠实于原文及是否虚构问题。新格式 D 导出强制要求人工 accept，不接受 pending。评分未填写时保持 null，不由助手代替真人判断。
+
+```sh
+python -m synthesis audit-report --run-dir results/runs/leaf_pilot_v1 --audit results/runs/leaf_pilot_v1/audit.jsonl --output results/runs/leaf_pilot_v1/audit_report.json
+python -m synthesis export --run-dir results/runs/leaf_pilot_v1 --audit results/runs/leaf_pilot_v1/audit.jsonl --output-dir data/synthetic/leaf_matched_v1 --count 10
 ```
 
-这些命令会调用配置的教师服务并产生用量。--max-new 限制本次处理的新作文数，重试上限由配置决定。--reserved 只用于本地交叉检查，不把验证/测试文本发给教师；近重复与官方划分来源仍由成员 2 审计。
+导出数不能超过合格 C 与人工接受 D 的可用数量。mock 导出需额外 --allow-debug，输出保持 debug，不能用于正式训练。messages 使用与 LEAF 相同的 user 指令和 feedback 字符串答案；保留原文及来源信息，避免训练/验证/测试泄漏。
 
-原始回答先保留，再做筛选；不自动修复坏 JSON、重复键、超限条目或虚构引用来伪造通过结果。自动规则不判断所有语法/语义错误，人工审核状态初始为 pending。
+## 历史版本与恢复
 
-## 本项目第一周的可复现路径
+configs/teacher.example.json、deepseek.json、deepseek_first5*.json、deepseek_guided5_v4.json、mock.json、feedback_v1～v4、schemas/feedback.schema.json 和旧定位辅助/周报脚本属于 structured_v1 历史方案，仅供旧版本复现。未标 feedback_format 的旧配置按历史格式解析；新配置必须明确 leaf_v1。
 
-成员 2 的数据位于独立 PR/交付包。下载器按固定提交取得文件并校验 Git blob 哈希，数据仅保存在本机：
+第一周旧结果见 docs/member3/week1-report.md，不改写其数字或输出。旧数据不自动拼接成新标签，真实 LEAF 教师反馈需新批次生成。修改 Prompt、格式或代码后使用新的运行目录，禁止混跑。
 
-```powershell
-python -X utf8 scripts/fetch_dataset_snapshot.py
-python -X utf8 scripts/audit_handoff.py
-python -X utf8 scripts/prepare_ellipse_pilot.py
-```
-
-真实调用的历史批次脚本包括 test_deepseek.py、run_first5.py、run_remaining45.py、run_guided5.py、run_new50_v4.py；它们固定了样本数、版本与输入指纹。已有运行目录只能按同版本续跑，不要删除日志或改变 Prompt 后混跑。
-
-第四版在输入端附上程序提供的唯一原文片段，每篇最多选择 6 个较完整片段；输出 Schema 仍允许最多 20 条，原有筛选规则不变。脚本会另存实际逐篇 Prompt 和候选复制诊断，不把定位辅助完整执行当作默认事实。
-
-同一批次中出现服务错误时先核查；质量失败原样保存，不重生成到通过为止。运行前应确认样本、费用预算和教师输出的训练使用条件。
-
-## 结果与人工审核
-
-results/runs/ 保存原始响应、输入快照、配置/代码/Prompt 指纹、质量和成本记录。data/ 与 results/runs/ 中的实际作文/日志未随模块上传，应按小组约定单独共享。
-
-阅读 [人工审核说明](../docs/member3/review-guide.md)。可以用 Markdown 阅读版填写判断，但真人未确认的结论和评分必须保持待审核。费用估算不等于实际扣费；正式使用前要核对来源、版本和审核策略。
-
-第一周试生成统计见 [报告](../docs/member3/week1-report.md)。当前 41 项离线测试通过，测试不访问真实 API。
+运行锁 .running.lock 表示同一目录有任务进行中；仅在确认对应进程已停止后手工清除失效锁。续跑使用同配置、输入和代码，变更指纹会拒绝继续。
