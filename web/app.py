@@ -25,13 +25,13 @@ def process_essay(essay_text):
     
     # 组装一个好看的 Markdown 文本用于展示
     md_text = f"### 评分结果\n"
-    md_text += f"- **语法 (Grammar)**: {scores.get('grammar', 'N/A')}\n"
+    md_text += f"- **连贯性 (Cohesion)**: {scores.get('cohesion', 'N/A')}\n"
+    md_text += f"- **句法 (Syntax)**: {scores.get('syntax', 'N/A')}\n"
     md_text += f"- **词汇 (Vocabulary)**: {scores.get('vocabulary', 'N/A')}\n"
-    md_text += f"- **结构 (Structure)**: {scores.get('structure', 'N/A')}\n"
-    md_text += f"- **连贯性 (Coherence)**: {scores.get('coherence', 'N/A')}\n"
-    md_text += f"- **内容 (Content)**: {scores.get('content', 'N/A')}\n"
-    md_text += f"- **综合 (Overall)**: {scores.get('overall', 'N/A')}\n\n"
-    md_text += f"### 总体评价\n{feedback}\n\n"
+    md_text += f"- **措辞 (Phraseology)**: {scores.get('phraseology', 'N/A')}\n"
+    md_text += f"- **语法 (Grammar)**: {scores.get('grammar', 'N/A')}\n"
+    md_text += f"- **规范 (Conventions)**: {scores.get('conventions', 'N/A')}\n\n"
+    md_text+= f"### 总体评价\n{feedback}\n\n"
     md_text += f"### 错误明细\n"
     
     for i, err in enumerate(errors):

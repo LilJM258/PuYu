@@ -6,15 +6,15 @@
 {
   "status": "success", 
   "essay_id": "string",
-  "scores": {
-    "grammar": 3,        // 语法得分，整数，0-5
-    "vocabulary": 4,     // 词汇得分，整数，0-5
-    "structure": 3,      // 结构得分，整数，0-5
-    "coherence": 4,      // 连贯性得分，整数，0-5
-    "content": 3,        // 内容得分，整数，0-5
-    "overall": 3.4       // 综合得分，保留一位小数
+    "scores": {
+    "cohesion": 3.5,
+    "syntax": 3.5,
+    "vocabulary": 3.0,
+    "phraseology": 3.0,
+    "grammar": 4.0,
+    "conventions": 3.0
   },
-  "overall_feedback": "整体评价，指出文章的优点和主要问题...",
+
   "errors": [
     {
       "type": "grammar",             // 错误类型：grammar/vocabulary/structure
