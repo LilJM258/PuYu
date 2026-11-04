@@ -11,13 +11,13 @@ def mock_generate_review(essay_text: str) -> dict:
     mock_result = {
         "status": "success",
         "essay_id": "mock_001",
-        "scores": {
-            "grammar": 3,
-            "vocabulary": 4,
-            "structure": 3,
-            "coherence": 4,
-            "content": 3,
-            "overall": 3.4
+                "scores": {
+            "cohesion": 3.5,
+            "syntax": 3.5,
+            "vocabulary": 3.0,
+            "phraseology": 3.0,
+            "grammar": 4.0,
+            "conventions": 3.0
         },
         "overall_feedback": "The essay is well-organized and expresses a clear opinion. However, there are some subject-verb agreement issues (e.g., 'students prefers' should be 'students prefer'). Try to use more varied vocabulary in the future.",
         "errors": [
