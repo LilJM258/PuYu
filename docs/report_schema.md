@@ -7,7 +7,27 @@
 ## 反馈任务的当前目标
 
 ```json
-{"feedback":"The essay states a clear position. Develop the second argument with a concrete example."}
+{
+  "status": "success", 
+  "essay_id": "string",
+    "scores": {
+    "cohesion": 3.5,
+    "syntax": 3.5,
+    "vocabulary": 3.0,
+    "phraseology": 3.0,
+    "grammar": 4.0,
+    "conventions": 3.0
+  },
+
+  "errors": [
+    {
+      "type": "grammar",             // 错误类型：grammar/vocabulary/structure
+      "original": "students prefers", // 必须精准匹配原文片段
+      "corrected": "students prefer", // 建议修改后的片段
+      "explanation": "Plural subjects require the base verb form." // 解释
+    }
+  ]
+}
 ```
 
 feedback 是英文字符串，JSON 只包含此字段。程序可在展示层添加 status、essay_id 等元数据，但不要求模型生成这些值。
