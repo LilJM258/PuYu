@@ -1,0 +1,140 @@
+[
+  {
+    "label": "样例 1 · 在线学习 / 多处错误",
+    "sample_id": "mock_001",
+    "essay": "Many students prefers online learning because it is convenience. They can study at home and saves time. However, online classes also have problems. For example, some students feels lonely and find it hard to ask questions. I think schools should combine online lessons with classroom activities, so students can enjoy flexibility and learn from each other.",
+    "is_mock": true,
+    "annotations": [
+      {
+        "start": 5,
+        "end": 21,
+        "category": "error",
+        "note": "复数主语 students 应搭配 prefer。"
+      },
+      {
+        "start": 46,
+        "end": 63,
+        "category": "error",
+        "note": "be 动词后此处需要形容词 convenient。"
+      },
+      {
+        "start": 88,
+        "end": 102,
+        "category": "error",
+        "note": "can 后并列动词使用原形 save。"
+      },
+      {
+        "start": 104,
+        "end": 147,
+        "category": "strength",
+        "note": "使用转折句，引出线上学习的另一面。"
+      },
+      {
+        "start": 166,
+        "end": 180,
+        "category": "error",
+        "note": "复数主语 students 应搭配 feel。"
+      },
+      {
+        "start": 223,
+        "end": 295,
+        "category": "improvement",
+        "note": "可补充混合教学的具体例子，使建议更有说服力。"
+      }
+    ],
+    "responses": {
+      "scoring": {
+        "scores": {
+          "cohesion": 3.5,
+          "syntax": 3.0,
+          "vocabulary": 3.0,
+          "phraseology": 3.0,
+          "grammar": 2.5,
+          "conventions": 4.0
+        }
+      },
+      "feedback": {
+        "feedback": "Your position is clear, and you consider both benefits and problems of online learning. Change 'students prefers' to 'students prefer' and 'students feels' to 'students feel' because the subjects are plural. Use the adjective 'convenient' after 'it is'. In 'can study at home and saves time', both verbs after 'can' need the base form, so use 'save'. Add a concrete example of how blended lessons would work."
+      },
+      "correction": {
+        "corrected_text": "Many students prefer online learning because it is convenient. They can study at home and save time. However, online classes also have problems. For example, some students feel lonely and find it hard to ask questions. I think schools should combine online lessons with classroom activities, so students can enjoy flexibility and learn from each other."
+      }
+    }
+  },
+  {
+    "label": "样例 2 · 校园花园 / 可选改进",
+    "sample_id": "mock_002",
+    "essay": "Our school should build a small garden. Students can grow vegetables and learn about nature. The garden is very good for students. It can also give us a quiet place to read. Although maintaining it takes time, each class could look after it for one week. This shared responsibility would make the project easier to manage.",
+    "is_mock": true,
+    "annotations": [
+      {
+        "start": 93,
+        "end": 130,
+        "category": "improvement",
+        "note": "语法正确，但 very good 较笼统，可以具体说明学习收益。"
+      },
+      {
+        "start": 255,
+        "end": 322,
+        "category": "strength",
+        "note": "总结轮流照料的作用，回应维护花园的难点。"
+      }
+    ],
+    "responses": {
+      "scoring": {
+        "scores": {
+          "cohesion": 3.5,
+          "syntax": 3.5,
+          "vocabulary": 3.0,
+          "phraseology": 3.0,
+          "grammar": 4.0,
+          "conventions": 4.0
+        }
+      },
+      "feedback": {
+        "feedback": "You explain the benefits of a school garden and offer a practical way to share the work. The sentence 'The garden is very good for students' is grammatical, but the benefit is vague. You could explain that growing vegetables gives students practical opportunities to learn about plants. This is an optional improvement in specificity, not a grammar correction."
+      },
+      "correction": {
+        "corrected_text": "Our school should build a small garden. Students can grow vegetables and learn about nature. The garden is very good for students. It can also give us a quiet place to read. Although maintaining it takes time, each class could look after it for one week. This shared responsibility would make the project easier to manage."
+      }
+    }
+  },
+  {
+    "label": "样例 3 · 图书馆 / 无需改动",
+    "sample_id": "mock_003",
+    "essay": "A school library should be a place where students can explore ideas at their own pace. For example, a student interested in the ocean could read a science book and then compare it with a travel memoir. Teachers can support this exploration by recommending books without deciding every choice. In this way, the library encourages both independent thinking and a lasting interest in reading.",
+    "is_mock": true,
+    "annotations": [
+      {
+        "start": 87,
+        "end": 201,
+        "category": "strength",
+        "note": "以具体阅读情境支撑中心观点。"
+      },
+      {
+        "start": 293,
+        "end": 389,
+        "category": "strength",
+        "note": "结尾回扣自主思考和阅读兴趣。"
+      }
+    ],
+    "responses": {
+      "scoring": {
+        "scores": {
+          "cohesion": 4.0,
+          "syntax": 4.0,
+          "vocabulary": 4.0,
+          "phraseology": 4.0,
+          "grammar": 4.0,
+          "conventions": 4.5
+        }
+      },
+      "feedback": {
+        "feedback": "The paragraph presents a clear purpose for the library and supports it with a relevant example. The final sentence connects the example to independent thinking and reading motivation. These links make the paragraph easy to follow. No specific grammatical correction is proposed in this feedback."
+      },
+      "correction": {
+        "corrected_text": "A school library should be a place where students can explore ideas at their own pace. For example, a student interested in the ocean could read a science book and then compare it with a travel memoir. Teachers can support this exploration by recommending books without deciding every choice. In this way, the library encourages both independent thinking and a lasting interest in reading."
+      }
+    }
+  }
+]

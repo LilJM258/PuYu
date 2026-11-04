@@ -1,0 +1,139 @@
+{
+  "$defs": {
+    "CorrectionOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "corrected_text": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Corrected Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corrected_text"
+      ],
+      "title": "CorrectionOutput",
+      "type": "object"
+    },
+    "FeedbackOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "feedback": {
+          "maxLength": 12000,
+          "minLength": 1,
+          "title": "Feedback",
+          "type": "string"
+        }
+      },
+      "required": [
+        "feedback"
+      ],
+      "title": "FeedbackOutput",
+      "type": "object"
+    },
+    "Scores": {
+      "additionalProperties": false,
+      "properties": {
+        "cohesion": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Cohesion",
+          "type": "number"
+        },
+        "syntax": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Syntax",
+          "type": "number"
+        },
+        "vocabulary": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Vocabulary",
+          "type": "number"
+        },
+        "phraseology": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Phraseology",
+          "type": "number"
+        },
+        "grammar": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Grammar",
+          "type": "number"
+        },
+        "conventions": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Conventions",
+          "type": "number"
+        }
+      },
+      "required": [
+        "cohesion",
+        "syntax",
+        "vocabulary",
+        "phraseology",
+        "grammar",
+        "conventions"
+      ],
+      "title": "Scores",
+      "type": "object"
+    },
+    "ScoringOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "scores": {
+          "$ref": "#/$defs/Scores"
+        }
+      },
+      "required": [
+        "scores"
+      ],
+      "title": "ScoringOutput",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "UI aggregation only: none of these fields is required of another task.",
+  "properties": {
+    "scoring": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ScoringOutput"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "feedback": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FeedbackOutput"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "correction": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CorrectionOutput"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "title": "TaskOutputs",
+  "type": "object"
+}
