@@ -105,3 +105,17 @@ def score_cards(scoring: dict | None) -> str:
         '</div><p class="score-note">六维范围 1–5，保留原始小数；'
         '不取整、不截断、不另造综合分。</p>'
     )
+
+
+def team_errors_html(essay: str, errors: list[dict]) -> str:
+    """Show actual shared-interface edits without inventing a corrected essay."""
+    rows = []
+    for item in errors:
+        exists = item["original"] in essay
+        match = "引用存在（仍需人工核验）" if exists else "引用不在当前原文中，请核对固定模拟响应"
+        rows.append('<section class="team-edit"><p><b>' + escape(item["type"]) + '</b> · ' + match + '</p>'
+                    '<p><del>' + escape(item["original"]) + '</del> → <ins>' + escape(item["corrected"]) + '</ins></p>'
+                    '<p>' + escape(item["explanation"]) + '</p></section>')
+    return '<article class="annotated-panel"><h3>团队接口 · 局部修改建议</h3>' + (
+        "".join(rows) if rows else '<p class="annotation-note">接口未提供局部建议。</p>'
+    ) + '</article>'

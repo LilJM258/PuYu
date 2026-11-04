@@ -13,7 +13,7 @@ from playwright.sync_api import expect, sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from inference.backend import examples
+from inference.backend import TEAM_EXAMPLE, TEAM_EXAMPLE_LABEL, examples
 
 expect.set_options(timeout=15_000)
 
@@ -52,6 +52,23 @@ def main():
             submit.click()
             expect(status).to_have_value(re.compile(".*请先输入.*", re.S))
             record("empty_input_rejected")
+
+            expect(page.locator('#output-mode').get_by_role('radio', name='团队模拟接口（1号）', exact=True)).to_be_checked()
+            record('default_source_is_member1_interface')
+            page.get_by_role('button', name='载入样例', exact=True).click()
+            expect(essay).to_have_value(TEAM_EXAMPLE)
+            submit.click()
+            expect(status).to_have_value(re.compile('.*已调用 1 号 mock_generate_review.*', re.S))
+            expect(page.locator('#scores .score-card')).to_have_count(6)
+            expect(page.locator('#team-edits')).to_contain_text('students prefer')
+            expect(page.locator('#correction-output')).to_contain_text('未提供 corrected_text')
+            expect(page.locator('#correction-output .annotated-body')).to_have_count(0)
+            page.screenshot(path=str(screenshots / '00-team-interface.png'), full_page=True)
+            record('shared_report_scores_feedback_edits_without_invented_full_text')
+            essay.fill('An unrelated essay.')
+            submit.click()
+            expect(status).to_have_value(re.compile('.*有 2 条接口引用不在当前原文中.*', re.S))
+            record('unmatched_shared_mock_quotes_explicitly_reported')
 
             def load_case(index):
                 item = examples()[index]
@@ -131,7 +148,7 @@ def main():
             expect(page.locator("#feedback-output textarea")).to_have_value("")
             record("clear_inputs_outputs")
 
-            page.locator("#output-mode").get_by_text("内置模拟样例", exact=True).click()
+            page.locator("#output-mode").get_by_text("展示样例（非接口）", exact=True).click()
             load_case(0)
             page.get_by_text("接口 JSON 联调 / 三个独立任务", exact=True).click()
             page.set_viewport_size({"width": 390, "height": 844})

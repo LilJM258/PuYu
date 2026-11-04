@@ -1,41 +1,46 @@
-# Web 任务接口
+# Web 接口适配
 
-## 三个独立任务
+## 默认调用链
 
-评分输出：
+```text
+页面生成按钮 → web.app.review → inference.backend.call_team_mock
+            → inference.mock_api.mock_generate_review(essay_text)
+```
+
+共享接口文件和函数保持主分支实现，不修改其假数据来迎合页面。当前返回 status、essay_id、scores、overall_feedback 和 errors，属于一份整合报告。
+
+scores 为 cohesion、syntax、vocabulary、phraseology、grammar、conventions。页面保留 1–5 原始小数，不取整或截回范围。errors 中的 type/original/corrected/explanation 按原值展示；引用不在当前作文中时明确提示，匹配存在也不证明建议正确。
+
+## 字段适配和缺失
+
+为复用显示校验器，scores 映射到评分区域，overall_feedback 映射到反馈区域。这只是展示层字段适配，不改动共享响应，也不将其另存为 LEAF 训练标签。完整原始数据保留在 raw_team_report 中。
+
+当前共享 mock 没有 corrected_text。页面显示“未提供全文”，只列出实际返回的局部建议；不通过拼接 errors 或填入展示样例冒充 GEC 输出。后续接口明确提供 corrected_text 时，可校验并显示蓝色句子差异。
+
+接口返回 error、抛出异常或结构损坏时显示失败，不退回展示样例。一个任务字段非法时，不修复原值；其他合法任务可独立显示，失败原始报告仍保留。
+
+## 独立展示和 JSON 联调
+
+展示样例仅从 data/mock/examples.json 读取预设材料；来源选择明确为“展示样例（非接口）”。它与共享 mock 的调用路径分开，不能作为接口验证证据。
+
+JSON 联调仍接受三个独立结果：
 
 ```json
 {"scores":{"cohesion":3.5,"syntax":3.7,"vocabulary":4,"phraseology":3.5,"grammar":3,"conventions":4}}
 ```
 
-反馈输出：
-
 ```json
-{"feedback":"The argument is clear. Develop the second point with a concrete example."}
+{"feedback":"Develop this argument with a concrete example."}
 ```
-
-纠错输出：
 
 ```json
 {"corrected_text":"The complete corrected essay."}
 ```
 
-反馈沿用 LEAF 字符串格式，不要求模型额外生成 errors、summary、original、corrected 或 explanation。三个任务不必同时存在；样本 ID、模型版本等元数据由调用方维护，不写入训练答案。
+这三个 JSON 不替代主分支整份报告协议。训练数据和教师输出格式由训练/合成模块维护，前端不擅自改变。
 
-## 校验与展示
+## 兼容与边界
 
-`inference/schema.py` 提供 `validate_task` 和 `validate_tasks`。校验纯 JSON、重复键、未知字段、空字符串、数值类型、有限数及评分范围；不修复坏 JSON，不取整或截断分数。
+保留 process_essay(essay_text) 的双返回值约定，以及 python web/app.py 启动方式。run_web.py 提供相同应用的独立入口。
 
-页面要求六维评分全部合法后展示；评分自动评测可采用逐维有效性口径，两者分开。反馈或纠错任务失败时，其他合法任务仍可展示。作文上限为 12,000 字符，不自动截断。
-
-`web.app.review(essay, mode, scoring_json, feedback_json, correction_json)` 负责当前模拟与联调流程。后续推理适配层应分别调用任务，将原始回答传给 `validate_tasks`。未经结构校验的内容不进入结果区域。
-
-页面汇总中的 `valid_outputs`、`errors`、`raw_outputs`、`essay`、`is_mock` 属于展示元数据，不能作为模型训练标签。原始失败输出保留在会话结果中；正式评测的持久化、超时与取消由推理调用方实现。结构校验不能证明反馈正确，也不能自动确认外部 JSON 与当前作文对应。
-
-## 颜色标注
-
-`data/mock/examples.json` 中的 `annotations` 包含 Python 字符索引 `start/end`、`category` 和 `note`。原文红底为 error、黄底为 improvement、绿底为 strength。标注与模型任务输出分开；编辑作文后不再精确匹配样例时不沿用语义标注。HTML 文本及提示均经过转义。
-
-纠正文本按句末标点与换行近似分句，以蓝底显示变化或新增的整句；删除整句单独提示。蓝色只表示文本差异，不表示修改质量。
-
-接口依据为项目 [LEAF 交接约定](https://github.com/LilJM258/PuYu/blob/e605c0b859d6c8a37899622717dfe85f29368f21/docs/feedback-format-handoff.md)。
+模型模块不会在页面导入时加载。未修改 model_pipeline.py、validator.py；其中旧 Prompt 和取整策略仍需模型/集成负责人另行统一，不能把模拟接口接通视为真实模型接通。

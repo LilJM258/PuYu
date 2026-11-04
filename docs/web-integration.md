@@ -1,23 +1,23 @@
-# Web 模块集成
+# Web 集成与提交
 
-本目录按 PuYu 仓库相对路径组织，是 Web 模块源码增量，不是完整训练仓库。将文件按目录合入成员功能分支，再提交 PR 审查。
+按负责人最新要求，在 feat/member6-web 分支开发，先同步远程分支并合入最新 main，保留其他成员更新，仅整合本模块必要的文件。
 
-## 文件合并
+## 共享文件
 
-- `README-web.md` 为独立模块说明；保留仓库根 README，可在其中添加到该文档的链接。
-- `requirements-web.txt` 与 `requirements-web-dev.txt` 为独立依赖文件，不覆盖训练、合成模块的依赖。
-- `web/app.py` 为本次需要替换的界面入口；同时合入 `web/presentation.py`、`web/style.css` 等配套文件。
-- `inference/schema.py` 和 `inference/backend.py` 仅负责 Web 校验与模拟，不替换 `model_pipeline.py`、`validator.py` 或 `mock_api.py`。
-- `evaluation/human/` 与自动评测模块并存，不覆盖 `evaluation/README.md` 或评分脚本。
-- `__init__.py` 用于独立运行；目标仓库已有非空同名文件时，保留其内容并合并所需声明。
+- web/app.py：保留并适配主分支的 mock_generate_review 调用、六维评分和 process_essay 回调；扩展 Gradio 展示。
+- inference/mock_api.py：使用主分支原文件，不替换、不重新定义函数。
+- inference/model_pipeline.py、validator.py：本模块不修改，也不在启动时导入加载模型。
+- 根 README、训练/合成代码和数据：保持主分支内容。
+- 人工评价材料位于 evaluation/human，与自动评测模块并存。
 
-仓库忽略规则应包含 `.venv/`、`__pycache__/`、`*.py[cod]`、`.env` 和 `results/web_smoke/`；保留现有 `.gitignore` 规则后补充缺项。
+## 验证
 
-## 集成验证
+安装 requirements-web.txt 后运行 `python -m unittest discover -s tests -p "test_web_*.py" -v`。验证包括共享函数确实被调用、原始响应保留、错误状态、异常、未提供纠正全文、小数与越界结果，以及独立样例不冒充共享接口。
 
-1. 安装 `requirements-web.txt`。
-2. 运行 `python -m unittest discover -s tests -p "test_web_*.py" -v`。
-3. 运行 `python run_web.py`，验证三个模拟案例、JSON 单任务与失败提示、颜色图例和输入清空。
-4. 按 `README-web.md` 执行可选浏览器检查。
+启动 `python run_web.py` 或 `python web/app.py`，按 README-web.md 执行浏览器检查。默认验证团队接口，另外检查展示样例的颜色和独立 JSON 输入。
 
-当前代码不加载真实模型。模型接入应遵循 `docs/web-interface.md`，并独立保存原始成功及失败输出。人工评价表为规则与记录模板，校准示例不代表真实模型或独立评价实验结果。
+## 提交
+
+在验证和逐文件检查后执行 git add .、git commit、git push origin feat/member6-web。不得直接推 main。网络故障可重试，必要时仅补传实际修改的具体文件，不上传整个目录，不强制覆盖远端更新。
+
+继续使用现有 PR #3，由负责人在网页或本地合入 main。保留已有上传和合并历史，不为处理本次集成而删除其他成员文件或重写仓库历史。

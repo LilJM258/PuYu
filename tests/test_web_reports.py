@@ -1,12 +1,14 @@
 import copy
 import json
 import unittest
+from unittest.mock import patch
 
 from pydantic import ValidationError
 
-from inference.backend import examples, mock_review
+from inference import mock_api
+from inference.backend import TEAM_EXAMPLE, TEAM_EXAMPLE_LABEL, examples, fixture_outputs
 from inference.schema import check_essay, validate_task, validate_tasks
-from web.app import JSON_MODE, MOCK_MODE, clear_all, load_example, review
+from web.app import JSON_MODE, MOCK_MODE, TEAM_MODE, clear_all, load_example, process_essay, review
 from web.presentation import EMPTY_CARDS, score_cards
 
 
@@ -91,7 +93,7 @@ class TaskOutputTests(unittest.TestCase):
 
     def test_unknown_mock_essay_not_given_canned_scores(self):
         with self.assertRaisesRegex(ValueError, "仅支持三个内置样例"):
-            mock_review("An unseen essay.")
+            fixture_outputs("An unseen essay.")
 
     def test_callback_mock_notice_and_feedback_verbatim(self):
         result = review(self.item["essay"], MOCK_MODE, "", "", "")
@@ -136,6 +138,83 @@ class TaskOutputTests(unittest.TestCase):
         result = review(self.item["essay"], JSON_MODE, "", "", "")
         self.assertIn("未提供任务输出", result[0])
         self.assertIsNone(result[-1])
+
+
+class SharedInterfaceTests(unittest.TestCase):
+    def setUp(self):
+        self.raw = mock_api.mock_generate_review(TEAM_EXAMPLE)
+
+    def test_default_path_calls_member1_shared_function_and_preserves_response(self):
+        original = copy.deepcopy(self.raw)
+        with patch('inference.mock_api.mock_generate_review', wraps=mock_api.mock_generate_review) as shared, \
+                patch('web.app.fixture_outputs', side_effect=AssertionError('fixture fallback forbidden')):
+            result = review(TEAM_EXAMPLE)
+        shared.assert_called_once_with(TEAM_EXAMPLE)
+        self.assertEqual(result[-1]['source'], 'inference.mock_api.mock_generate_review')
+        self.assertEqual(result[-1]['raw_team_report'], original)
+        self.assertEqual(result[-1]['valid_outputs']['scoring']['scores'], original['scores'])
+        self.assertEqual(result[2], original['overall_feedback'])
+        self.assertNotIn('correction', result[-1]['valid_outputs'])
+        self.assertIn('未提供 corrected_text', result[3])
+
+    def test_arbitrary_input_uses_shared_mock_and_reports_unmatched_quotes(self):
+        result = review('An unrelated essay.', TEAM_MODE)
+        self.assertIn('有 2 条接口引用不在当前原文中', result[0])
+        self.assertIn('引用不在当前原文中', result[4])
+
+    def test_error_response_is_visible_and_retained_without_fallback(self):
+        response = {'status': 'error', 'message': 'service unavailable'}
+        with patch('inference.mock_api.mock_generate_review', return_value=response):
+            result = review(TEAM_EXAMPLE)
+        self.assertEqual(result[1], EMPTY_CARDS)
+        self.assertEqual(result[2], '')
+        self.assertIn('service unavailable', result[0])
+        self.assertEqual(result[-1]['raw_team_report'], response)
+
+    def test_exception_does_not_silently_return_fixture_scores(self):
+        with patch('inference.mock_api.mock_generate_review', side_effect=TimeoutError('timeout')):
+            result = review(TEAM_EXAMPLE)
+        self.assertIn('团队模拟接口调用失败', result[0])
+        self.assertEqual(result[1], EMPTY_CARDS)
+        self.assertIsNone(result[-1])
+
+    def test_invalid_team_score_not_clipped_or_rounded(self):
+        self.raw['scores']['syntax'] = 3.17
+        self.raw['scores']['grammar'] = 6
+        with patch('inference.mock_api.mock_generate_review', return_value=self.raw):
+            result = review(TEAM_EXAMPLE)
+        self.assertEqual(result[1], EMPTY_CARDS)
+        self.assertEqual(result[2], self.raw['overall_feedback'])
+        self.assertEqual(result[-1]['raw_team_report']['scores']['syntax'], 3.17)
+        self.assertEqual(result[-1]['raw_team_report']['scores']['grammar'], 6)
+
+    def test_full_correction_only_displayed_when_interface_supplies_it(self):
+        self.raw['corrected_text'] = TEAM_EXAMPLE.replace('students prefers', 'students prefer')
+        with patch('inference.mock_api.mock_generate_review', return_value=self.raw):
+            result = review(TEAM_EXAMPLE)
+        self.assertEqual(result[-1]['valid_outputs']['correction']['corrected_text'], self.raw['corrected_text'])
+        self.assertIn('revision-changed', result[3])
+
+    def test_main_callback_contract_and_raw_json_preserved(self):
+        rendered, raw_json = process_essay(TEAM_EXAMPLE)
+        self.assertIn('3.5', rendered)
+        self.assertEqual(json.loads(raw_json), self.raw)
+
+    def test_display_fixtures_never_call_shared_interface(self):
+        with patch('inference.mock_api.mock_generate_review', side_effect=AssertionError('not a fixture source')):
+            result = review(examples()[0]['essay'], MOCK_MODE)
+        self.assertEqual(result[-1]['source'], 'display_fixture')
+
+    def test_bad_errors_are_not_rendered_or_replaced_with_fixture_data(self):
+        self.raw['errors'] = [{'original': 'students prefers'}]
+        with patch('inference.mock_api.mock_generate_review', return_value=self.raw):
+            result = review(TEAM_EXAMPLE)
+        self.assertIn('局部建议缺少有效', result[0])
+        self.assertEqual(result[-1]['raw_team_report'], self.raw)
+
+    def test_example_loader_selects_the_actual_source_explicitly(self):
+        self.assertEqual(load_example(TEAM_EXAMPLE_LABEL)[4], TEAM_MODE)
+        self.assertEqual(load_example(examples()[0]['label'])[4], MOCK_MODE)
 
 
 if __name__ == "__main__":
