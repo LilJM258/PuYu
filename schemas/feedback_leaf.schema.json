@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LEAF-compatible teacher feedback v1",
+  "type": "object",
+  "required": [
+    "feedback"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "feedback": {
+      "type": "string",
+      "pattern": "\\S",
+      "maxLength": 12000
+    }
+  }
+}

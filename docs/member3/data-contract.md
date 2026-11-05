@@ -1,41 +1,41 @@
-# 成员 2 → 3 → 5 数据接口草案
+# 成员 2 → 3 → 5 数据接口
 
-接口版本：v1。反馈语言目前为英文；正式批次前由 1、2、3、5 号确认。
+接口版本：leaf_feedback_v1（2026-11-03）。后续教师反馈统一模仿 LEAF；旧细粒度反馈仅作为历史实验版本保留，不与新版本混合训练。
 
 ## 作文输入
 
-UTF-8 JSONL，一行一篇。必需字段为 id、source、split、input、dataset_version；详细结构见 [输入 Schema](../../schemas/input.schema.json)。
+UTF-8 JSONL，一行一篇，保留 id、source、split、input、dataset_version；见 schemas/input.schema.json。仅 train 作文用于正式合成；验证/测试集只在本地检查隔离，不发给教师。
 
-```json
-{"id":"实际来源ID","source":"ELLIPSE","split":"train","input":"实际作文正文","dataset_version":"固定清洗划分版本"}
+原始人工分数与来源信息可以存入 metadata，但不作为教师输入，也不作为学生生成目标。
+
+## 任务指令与答案
+
+人工与教师反馈共用下面的 user 指令，接两个换行和完整原文：
+
+```text
+Provide feedback on the following English essay. Return a JSON object with a feedback string.
 ```
 
-保留来源 ID 和原文；同篇作文不重复混入多个任务输入。原始人工标签可留在 metadata，调用教师时不发送这些标签。验证/测试集只用于本地隔离检查，不能用于 Prompt 调试或合成训练数据。
-
-成员 2 的 messages 格式由审计/准备脚本精确移除已核对的任务指令前缀，保留正文字符；未知前缀会报错，不猜测切分。数据版本同时记录固定来源提交。
-
-## 教师反馈
-
-监督目标为 [反馈 Schema](../../schemas/feedback.schema.json)：
+assistant 目标为严格 JSON：
 
 ```json
-{
-  "summary": "Overall feedback",
-  "feedback": [
-    {"type":"grammar","kind":"error","original":"quoted original text","corrected":"suggested edit","explanation":"Reason"}
-  ],
-  "suggestions": []
-}
+{"feedback":"Your position is clear. Support the main argument with a concrete example and check subject–verb agreement."}
 ```
 
-feedback 最多 20 条，suggestions 最多 5 条。没有错误时允许空反馈。kind 区分明确错误与可选改进；原文引用必须确实存在，候选筛选还检查唯一性、重复和未修改等问题。
+feedback 是非空英文字符串，最多 12000 字符；不增加其他字段，不添加评分，不要求原文位置、独立改法或解释字段。规范见 schemas/feedback_leaf.schema.json。生成被截断、重复键、非法 JSON 或错误类型均不属于 C 池。
 
-导出候选包含 task=essay_feedback、input、output、source=synthetic、split=train 和 metadata。metadata 记录源 ID、数据版本、教师名称、Prompt 版本、运行指纹、审核状态等，不能作为学生模型应生成的内容。不得用教师合成分数覆盖原始人工评分。
+## C/D 与质量审核
 
-## 候选数据与实验
+C：基本格式合格的教师反馈。D：从 C 中进一步经过人工内容审核接受的反馈。检查是否针对原文、判断是否正确、建议是否具体、是否保持原意、是否虚构问题。自动程序不凭整段文字推断修改位置或语义正确性。
 
-C 是基本格式合格池；D 在 C 的基础上接受既定规则筛选及实际已有的人工审核处理。没有逐条人工检查的 D 不能称为人工全部认可。
+新格式导出 D 必须有与当前运行和记录指纹匹配的人工 accept；pending 和 reject 均不进入 D。D_pool 只是等待内容审核的候选，不能直接当正式 D。人工资源或 D 数量不足时，应明确报告，不以格式通过替代内容筛选。
 
-成员 5 应确认训练任务提示词、稳定 JSON 序列化、长度与采样方式，并控制 C/D 数量及训练预算。不同 Prompt 版本和反馈粒度分别保留，不能无说明混成一份对照实验数据。
+## 导出
 
-本模块不修改现有网页报告接口。将 summary/feedback 映射到最终展示报告时，评分来自评分任务，不能补造缺失分数。
+候选保留 id、task=essay_feedback、input、output、source=synthetic、split、schema_version、messages、metadata。messages 的 user 使用上述 LEAF 指令，assistant 为 output 的稳定 JSON 序列化。训练只读取 messages，不把教师名称、费用或审核元数据加入监督答案。
+
+C/D 等量抽样，固定种子，记录源 ID、教师、Prompt、数据版本、审核状态和实际训练预算。旧 structured_v1 配置、feedback.schema.json 与定位辅助脚本只供历史复现，不用于新的 LEAF 批次。
+
+## 展示接口
+
+教师输出的 feedback 可映射到页面整体反馈文本。评分来自独立评分任务；不能从反馈补造分数或 errors 数组。当前网页与推理原型尚需 1、6 号按新接口集成，见 docs/report_schema.md。

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from . import __version__
 from .common import (ROOT, append_jsonl, canonical, digest, evaluate_response, identity,
-                     quality_checks, read_json, read_jsonl, repair_tail, run_lock,
+                     quality_checks, feedback_schema, LEAF_INSTRUCTION, read_json, read_jsonl, repair_tail, run_lock,
                      schema, utc_now, validate_inputs, write_json, write_jsonl)
 from .providers import ChatProvider, MockProvider, ProviderError
 
@@ -18,7 +18,7 @@ def load_config(path):
     config = read_json(path)
     allowed = {"provider", "model", "prompt_version", "prompt_file", "feedback_language",
                "fixtures_file", "base_url", "api_key_env", "max_input_chars", "max_attempts",
-               "timeout_seconds", "retry_seconds", "request", "pricing"}
+               "timeout_seconds", "retry_seconds", "request", "pricing", "feedback_format"}
     if not isinstance(config, dict) or set(config) - allowed:
         raise ValueError("Unknown config fields; store API keys only in environment variables")
     if config.get("provider") not in ("mock", "chat_completions"):
@@ -47,7 +47,7 @@ def load_config(path):
                 raise ValueError("Invalid price: " + key)
     prompt = (path.parent / config["prompt_file"]).read_text(encoding="utf-8-sig")
     prompt = prompt.replace("{{feedback_language}}", config["feedback_language"])
-    prompt = prompt.replace("{{feedback_schema}}", canonical(schema("feedback")))
+    prompt = prompt.replace("{{feedback_schema}}", canonical(schema(feedback_schema(config))))
     fixture_path = None
     if config["provider"] == "mock":
         fixture_path = path.parent / config["fixtures_file"]
@@ -98,7 +98,7 @@ def generate(input_path, config_path, run_dir, reserved_path=None, max_new=None)
         raise ValueError("max_new must be positive")
     spec = {"config": config, "prompt": prompt, "input_sha256": digest(rows),
             "reserved_sha256": digest(reserved) if reserved_path else None,
-            "schemas": {name: schema(name) for name in ("input", "feedback")},
+            "schemas": {"input": schema("input"), "feedback": schema(feedback_schema(config))},
             "code_sha256": digest({p.name: p.read_text(encoding="utf-8") for p in sorted((ROOT / "synthesis").glob("*.py"))}),
             "fixture_sha256": digest(read_json(fixture_path)) if fixture_path else None,
             "package_version": __version__, "jsonschema_version": importlib.metadata.version("jsonschema")}
@@ -153,7 +153,7 @@ def generate(input_path, config_path, run_dir, reserved_path=None, max_new=None)
                         if attempt < config["max_attempts"]:
                             time.sleep(min(60, max(exc.retry_after, config["retry_seconds"] * 2 ** (attempt - 1))))
                         continue
-                    output, errors = evaluate_response(response)
+                    output, errors = evaluate_response(response, feedback_schema(config))
                     event.update({"status": "response", "raw_response": response, "output": output,
                                   "basic_errors": errors, "json_valid": not any(e in errors for e in (
                                       "invalid_json", "empty_content", "invalid_response_envelope")),
@@ -176,7 +176,7 @@ def checked_run(run_dir):
     manifest = read_json(run_dir / "manifest.json")
     if digest(manifest["spec"]) != manifest["fingerprint"]:
         raise ValueError("Manifest fingerprint mismatch")
-    if manifest["spec"]["schemas"] != {name: schema(name) for name in ("input", "feedback")}:
+    if manifest["spec"]["schemas"] != {"input": schema("input"), "feedback": schema(feedback_schema(manifest["spec"]["config"]))}:
         raise ValueError("Run uses a different schema version")
     rows = read_jsonl(run_dir / "inputs.jsonl")
     if digest(rows) != manifest["spec"]["input_sha256"]:
@@ -207,7 +207,7 @@ def filter_run(run_dir):
             if not event or event["status"] != "response":
                 basic_errors, output = ["no_successful_response"], None
             else:
-                output, basic_errors = evaluate_response(event["raw_response"])
+                output, basic_errors = evaluate_response(event["raw_response"], feedback_schema(manifest["spec"]["config"]))
             check = quality_checks(row["input"], output) if not basic_errors else {
                 "reasons": [], "warnings": [], "locations": [], "quote_count": 0, "matched_quotes": 0}
             reasons = basic_errors + check["reasons"]
@@ -232,6 +232,11 @@ def filter_run(run_dir):
                                        "run_fingerprint": manifest["fingerprint"], "sample_key": key,
                                        "record_sha256": record["record_sha256"],
                                        "is_mock": manifest["spec"]["config"]["provider"] == "mock"}}
+                if feedback_schema(manifest["spec"]["config"]) == "feedback_leaf":
+                    sample["schema_version"] = "leaf_feedback_v1"
+                    sample["messages"] = [
+                        {"role": "user", "content": LEAF_INSTRUCTION + row["input"]},
+                        {"role": "assistant", "content": canonical(output)}]
                 pools["C"].append(sample)
                 if not reasons:
                     pools["D"].append(sample)
@@ -245,7 +250,9 @@ def filter_run(run_dir):
                  "quote_count": quotes, "matched_quotes": matched,
                  "quote_match_rate": matched / quotes if quotes else None,
                  "reasons_by_sample": dict(reason_counts), "run_fingerprint": manifest["fingerprint"],
-                 "note": "C has basic format validation only; D adds deterministic rules. Neither is human-approved.",
+                 "note": ("C is format-valid. D_pool is an unreviewed candidate pool only; LEAF D export requires human acceptance."
+                          if feedback_schema(manifest["spec"]["config"]) == "feedback_leaf"
+                          else "C has basic format validation only; D adds deterministic rules. Neither is human-approved."),
                  "is_mock": manifest["spec"]["config"]["provider"] == "mock"}
         write_json(destination / "quality_stats.json", stats)
     return stats
@@ -360,6 +367,9 @@ def export_matched(run_dir, output_dir, count=None, seed=42, audit_path=None,
     d_pool = read_jsonl(run_dir / "filtered" / "D_pool.jsonl")
     records = {r["sample_key"]: r for r in read_jsonl(run_dir / "filtered" / "checks.jsonl")}
     reviews = read_reviews(audit_path, records) if audit_path else {}
+    is_leaf = feedback_schema(manifest["spec"]["config"]) == "feedback_leaf"
+    if is_leaf:
+        require_human = True
     if require_human and not audit_path:
         raise ValueError("--require-human requires --audit")
     def eligible(row):
@@ -376,7 +386,7 @@ def export_matched(run_dir, output_dir, count=None, seed=42, audit_path=None,
         for row in rows:
             review = reviews.get(row["metadata"]["sample_key"], {})
             row["metadata"].update({"experiment_group": label, "human_decision": review.get("decision", "not_reviewed"),
-                                    "filter_version": "rules_v1" if label == "D" else "basic_v1"})
+                                    "filter_version": ("leaf_human_v1" if is_leaf else "rules_v1") if label == "D" else "basic_v1"})
     prefix = "DEBUG_" if is_mock else ""
     write_jsonl(output_dir / (prefix + "C.jsonl"), c)
     write_jsonl(output_dir / (prefix + "D.jsonl"), d)
