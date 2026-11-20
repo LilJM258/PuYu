@@ -1,0 +1,3 @@
+# Lightweight reference similarity; no model weights downloaded.
+rouge-score==0.1.2
+sacrebleu>=2.4,<3

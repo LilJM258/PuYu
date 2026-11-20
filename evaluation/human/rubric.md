@@ -46,3 +46,11 @@
 评分、反馈、纠错独立：评分失败不妨碍评价合法反馈。当前页面对一个评分任务要求六维全部合法后展示；自动评测程序按维度计分，两者口径不同。正式评分应使用未经页面修复的原始输出，页面不补分、不取整、不截断。
 
 配套：`template.md`、`template.jsonl`、`calibration-example.md`。模板保留四项评分键；正式评价记录与校准记录分别汇总。
+
+## 5. 自动汇总接口（5 号，2026-11-09）
+
+本量表的四维锚点和原始模板保留不变。使用 `python -m evaluation.feedback_review prepare` 生成匿名材料和带 `review_manifest_fingerprint` 的可填写模板，再用 summarize 导入每位评审的独立记录。评分整数 1～5；修改有效性 N/A 时用 adjudication_notes 说明，其他适用项需完成；空反馈或损坏输出保持 null。
+
+汇总按每份反馈先平均评审分，再平均样本；逐维输出样本数、标准差及 N/A 数。共同有效样本可报告评审间 QWK 和完全一致率；分差≥2 自动列出，不覆盖原始记录。claim_judgments 使用 judgment/evidence/reason；程序从实际判断重新计数，报告的是独立评审记录池的误判比例，非裁决后的唯一错误率。无判断时不生成比例。
+
+外部裁判记录必须标 rater_kind=llm、judge_model 和 judge_prompt_version，与人评分开，不能把 LLM 当真人；本程序不调用付费 API。[完整使用说明](../feedback-readme.md)。

@@ -1,0 +1,2 @@
+{"id": "synthetic_feedback_1", "task": "essay_feedback", "source": "LEAF", "split": "debug", "input": "Students need quiet libraries.", "output": {"feedback": "Your position is clear. Add a concrete example to support the claim."}}
+{"id": "synthetic_feedback_2", "task": "essay_feedback", "source": "LEAF", "split": "debug", "input": "Reading improves my vocabulary.", "output": {"feedback": "The benefit is clear. Explain how you record and practise new words."}}

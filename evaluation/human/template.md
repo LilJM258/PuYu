@@ -27,3 +27,9 @@ hallucinated_error（true / false / 未核验）：待填写。
 已判定数、invalid 数、uncertain 数与比例（零分母不适用）：待填写。
 
 漏报/其他说明：待填写。分歧与裁决记录：独立评分后再填，保留所有原始记录。
+
+## 程序汇总用法
+
+本空表用于理解字段；实际使用请由 `python -m evaluation.feedback_review prepare` 生成带批次指纹的 JSONL 模板，每位评审独立复制填写。保留自动填写的 ID、output_valid、raw_feedback、rubric_version 和 review_manifest_fingerprint，不将空表直接作为已完成记录。
+
+rated_at 使用含时区 ISO 时间，evidence 填具体依据；claim_judgments 每项用 judgment（valid/invalid/uncertain）、evidence、reason。细节见 [反馈评价说明](../feedback-readme.md)。
