@@ -13,3 +13,6 @@ results/runs/
 results/test_temp/
 results/review_week1/
 *.log
+.venv-evaluation/
+
+.DS_Store

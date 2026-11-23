@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--adapter", type=str, default=None)
     parser.add_argument("--out_file", type=str, required=True)
-    parser.add_argument("--limit", type=int, default=-1)
+    parser.add_argument("--limit", type=int, default=10)
     args = parser.parse_args()
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)

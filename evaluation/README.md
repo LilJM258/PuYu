@@ -1,96 +1,63 @@
-# 成员 5：ELLIPSE 评分评测初版
+# 5 号：三任务评测工具
 
-入口：`python -m evaluation.scoring`，只用 Python 标准库，无需 GPU、模型下载或教师 API。
+更新：2026-11-20（程序始于2026-11-09）。评分、作文反馈、语法纠错分别评测，不要求一个模型回答同时包含三种结果。模型原始输出、ID、失败记录和输入版本保留；不在评测前修复、补造或静默丢弃失败样本。
 
-## 已确定的规则
+| 任务 | 入口 | 已实现 | 详细说明 |
+|---|---|---|---|
+| 六维评分 | `python -m evaluation.scoring` | MAE、RMSE、实际分数距离 QWK、逐维失败与 4 分误差惩罚 | [评分](scoring-readme.md) |
+| 作文反馈 | `python -m evaluation.feedback` | ROUGE-1/2/L、BLEU、可选 BERTScore，覆盖率与原始失败记录 | [反馈](feedback-readme.md) |
+| 反馈内容质量 | `python -m evaluation.feedback_review` | 匿名评审材料、6 号量表 v0.2 评分汇总、评审一致性与分歧；可导入有来源记录的外部裁判分数 | [反馈](feedback-readme.md) |
+| 语法纠错 | `python -m evaluation.correction` | ERRANT Precision/Recall/F0.5；全文单参考、已对齐官方 M2 两种入口 | [纠错](correction-readme.md) |
 
-- 六维为 cohesion、syntax、vocabulary、phraseology、grammar、conventions。
-- 人工与预测分数均保留原始小数，合法范围 1～5；不取整、不吸附到半分档、不截断、不补造评分。
-- 有效性按维度判断：五维合法、一维非法时，五维正常计分，一维失败；另统计六维全部有效的作文比例。
-- 有效预测逐维计算 MAE、RMSE、QWK，报告每项分母与覆盖率。
-- “计入失败惩罚的平均绝对误差”是项目自定义补充指标：有效维度取实际绝对误差，失败维度取 4，再除以全部应评维度数。它不是常规 MAE，也不是将失败填成预测 1 分。
-- 宏平均为有定义维度的算术平均，同时输出参与平均的维度数，不能把少数维度的平均伪装为完整六维结果。
+反馈相似度不能证明建议正确；人评汇总不会自动替人判断。没有实现付费 API 裁判调用或原版 FeedEval 训练，外部 LLM 评分与人评严格分开。GEC 全文自动提取编辑结果不冒充官方 BEA 逐句基准成绩。
 
-## 不取整的 QWK 口径
+## 环境与安装
 
-使用二次分歧权重 `w(a,b)=((a-b)/4)^2`，按原始分数的实际距离计算。观测分歧取配对样本平均，期望分歧取真实/预测各自经验边际分布独立配对的平均：
-
-```text
-QWK = 1 - observed_squared_disagreement / expected_squared_disagreement
-```
-
-分母中的共同尺度 4² 可约去，代码直接计算平方距离。对于完整等距评分网格（如 1、1.5、…、5），与在该网格上使用等级索引二次权重的 QWK 等价。3.7 等其他合法小数也按实际距离计算，不视为非法、不四舍五入。运行记录明确标为 `quadratic_actual_score_distance`。
-
-这是保留数值间距的口径，不能与“先取整再计算”的结果无说明混比，也不能把观测到的不同小数压缩成等距离类别序号。传统分类实现使用类别索引权重，参考 [scikit-learn 官方实现](https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_classification.py)；本项目明确使用实际分数距离，推广到网格外小数时应披露此差异。
-
-没有有效配对，或双方在全部样本上都给同一个相同分数时，QWK 无定义，输出 null 与原因，不强行写成 1。MAE/RMSE 仍按自身定义计算。
-
-## 输入
-
-### 人工答案
-
-直接读取 training_data_v1/validation.jsonl 或 test.jsonl 中的 ELLIPSE、essay_scoring 样本，从 assistant 消息读取 scores。通过原始 ID 匹配，不依赖行序。非评分任务跳过。
-
-人工答案缺失、重复 ID、错误 split 或非法分数会停止评测，不把坏人工标签算成模型失败。开发使用验证集或合成小样例；测试集仅在评测方案固定后用于正式评测。
-
-### 模型预测
-
-每个 UTF-8 JSONL 文件仅对应一个模型和一个划分。推荐保存原始输出：
-
-```json
-{"id":"ellipse:example","raw_output":"{\"scores\":{\"cohesion\":3.5,\"syntax\":3.7,\"vocabulary\":4.0,\"phraseology\":3.5,\"grammar\":3.0,\"conventions\":4.0}}"}
-```
-
-也支持上游仅做忠实 JSON 解析、未修复的 scores：
-
-```json
-{"id":"ellipse:example","scores":{"cohesion":3.5,"syntax":3.7,"vocabulary":4.0,"phraseology":3.5,"grammar":3.0,"conventions":4.0}}
-```
-
-若 raw_output 与 scores 同时存在，以 raw_output 为准，不能用修复后的 scores 覆盖坏输出。生成异常可以记录 `{"id":"...","status":"error","raw_output":"原始返回或错误记录"}`。文件中未提供某个应评 ID，也计为该篇六维失败。
-
-## 异常处理
-
-| 情况 | 处理 |
-|---|---|
-| 一维缺失、非数字、布尔值、越界 | 仅该维失败，其余合法维度保留 |
-| 缺少整个 scores、原始回答不是合法 JSON、生成报错 | 该篇六维失败 |
-| 同一个应评 ID 多次出现 | 六维失败，不任取一个有利结果 |
-| JSON 重复键、非有限数字、指数溢出 | 不修复；记录对应非法原始行/回答 |
-| JSONL 行不可解析或没有 ID | 保存 unassigned；无法归属的应评 ID 仍计为缺失预测，不凭行序猜测 |
-| 不属于本次人工答案的 ID | 保存 unknown_ids，不扩大评测分母 |
-| 额外评分键 | 单独记录，六个已知维度仍分别判断；本程序不是整份报告 Schema 的严格通过率检测 |
-
-## 运行与输出
-
-先跑合成算例（明确不是模型效果）：
+评分与人评材料/汇总只依赖 Python 标准库（Python 3.9+）。自动反馈/GEC 建议使用独立 Python 3.12 虚拟环境，避免修改训练或网页环境：
 
 ```sh
-python -m evaluation.scoring --gold evaluation/examples/gold.jsonl --predictions evaluation/examples/predictions.jsonl --model synthetic_example_only --split debug --output-dir results/scoring_example_v1
+python -m venv .venv-evaluation
+# macOS/Linux
+source .venv-evaluation/bin/activate
+# Windows PowerShell 使用 .venv-evaluation\Scripts\Activate.ps1
+python -m pip install -r requirements-evaluation.txt
+python -m spacy download en_core_web_sm
 ```
 
-该算例有 3 篇、18 个应评维度，其中 1 个维度故意越界。合法小数 3.7 保持原值。预期：17/18 维度有效，2/3 篇全部有效，宏平均 MAE=1/18≈0.05556，失败惩罚宏平均=5/18≈0.27778。
-
-模型正式预测文件准备好后，例如：
+BERTScore 单独可选安装：
 
 ```sh
-python -m evaluation.scoring --gold training_data_v1/validation.jsonl --predictions results/predictions/B_validation.jsonl --model B_checkpoint_name --split validation --output-dir results/evaluation/B_validation_v1
+python -m pip install -r requirements-evaluation-bert.txt
 ```
 
-输出目录必须尚不存在，避免覆盖历史结果。输出包括：
+反馈基础依赖不下载模型；GEC 英文模型约 13 MB。BERTScore 需显式指定模型，可能下载较大的公开权重；也可以使用本地模型目录。程序不调用付费 API。
 
-- report.json：逐维指标、宏平均、覆盖率、失败原因计数、方法版本、输入文件路径和 SHA-256。
-- samples.jsonl：每篇六维的真实值、预测值、合法状态和原始预测记录。
-- failures.jsonl：按失败维度记录原因及原始预测记录。
-- unassigned.jsonl：无法归属到 ID 的输入行。
-- unknown_ids.jsonl：本次答案集中不存在的预测 ID。
+**与 Web 环境分开：** 本次验证的 Transformers 4.57.6 要求 huggingface-hub<1，而 main 的 Gradio 6.31.0 要求 huggingface-hub>=1.16，不能同时满足。不要把 BERTScore 依赖装入现有网页环境，也不为此修改 requirements-web.txt。不同环境可以读取同一份预测文件并输出评测报告。
 
-## 验证与边界
+## 数据与复现
+
+- 原始训练包的 messages 格式可直接读取；也支持带 id/task/source/split/input/output 的准备格式，具体见各任务说明。
+- 通过 ID 匹配，不按行序猜测。原始输出优先于解析结果，重复 ID 失败，额外 ID 单独记录。
+- 开发用 debug 合成样例和 validation。固定模型/规则后才做最终 test 评测，不为缺失测试数据而改用训练集。
+- 当前包有 400 条 LEAF 验证参考和 220 条 WI_LOCNESS 验证记录；test 有 LEAF 参考，但没有带答案的 GEC 样本。纠错正式测试仍需 2 号提供；若已有官方对齐 M2，可直接用 M2 入口。
+- 输出目录必须不存在，避免覆盖先前报告。报告记录输入 SHA-256、算法与依赖版本；不同样本/版本的分数不可无说明直接比较。
+- 多模型共同有效子集自动比较尚未实现；各模型的成功样本指标必须结合覆盖率解释。反馈/GEC 不沿用“评分失败加 4 分”的单位特定惩罚，不伪造低分或空改法。
+
+## 测试
 
 ```sh
 python -m unittest discover -s tests -p 'test_scoring_evaluation.py' -v
+python -m unittest discover -s tests -p 'test_feedback_evaluation.py' -v
+python -m unittest discover -s tests -p 'test_correction_evaluation.py' -v
+python -m unittest discover -s tests -p 'test_bertscore_integration.py' -v
 ```
 
-测试使用合成小样例验证手算误差、实际距离 QWK、半分网格等价性、保留小数、部分失败、全失败、重复 ID、坏 JSON、原始输出优先与命令行输出；不使用测试集选择规则。
+BERTScore 接口测试使用本地构造的微型随机模型，仅验证真实库调用、文件读取和不静默截断，不代表语义质量。缺少相应可选依赖/英文模型时测试会明确跳过；本次已在独立环境实际运行所需依赖验证。Web 回归在独立 Web 环境运行，不把依赖冲突误报为模型错误。
 
-当前一次评测一个模型。多模型共同有效子集的辅助对照尚未实现；主结果仍应报告各自覆盖率与全量失败惩罚，不能只挑共同成功样本。运行耗时、推理显存、纠错与人工反馈质量也不属于此程序的评分指标。
+## 当前模型与小批次联调
+
+项目已统一官方Qwen3-1.7B，不能把旧Qwen2.5结果当新版对照。2026-11-20的val_tuned为10条评分＋10条反馈：评分全部有效，MAE=0.4500、RMSE=0.6050、QWK=0.0840；反馈9条有效。这里只说明程序已接通，不能作为正式模型效果结论，参见 [持续摘要](../docs/member5/evaluation-status.md)。
+
+混合预测先按task拆分，对交付ID抽取同划分参考子集；直接以全部validation为10条小批次的应评范围会错误计入未交付预测。保留原始输出和失败，不修补JSON。根 inference.py 当前默认test且limit=-1会漏每池最后一条，不直接复制其默认命令做验证集或完整测试；见 [入口说明](../docs/model-migration.md)。训练Qwen3的依赖版本须另核对，不能将可选BERTScore的最低版本当成训练环境要求。
+
+2026-11-20 同步后回归：共120项，119项通过，1项BERTScore集成因未安装可选依赖明确跳过；ERRANT及英文模型已实际验证。历史微型BERT接口通过记录不替代本次跳过状态；本次未训练学生模型、未进行GPU验证。

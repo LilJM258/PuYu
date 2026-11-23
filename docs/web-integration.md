@@ -21,3 +21,7 @@
 在验证和逐文件检查后执行 git add .、git commit、git push origin feat/member6-web。不得直接推 main。网络故障可重试，必要时仅补传实际修改的具体文件，不上传整个目录，不强制覆盖远端更新。
 
 继续使用现有 PR #3，由负责人在网页或本地合入 main。保留已有上传和合并历史，不为处理本次集成而删除其他成员文件或重写仓库历史。
+
+## 2026-11-09：自动评测依赖
+
+反馈 BERTScore/Transformers 与当前 Web 的 huggingface-hub 版本要求冲突，使用独立评测环境，勿修改 Web 环境解决。说明见 [三任务评测](../evaluation/README.md)。人评模板由 feedback_review prepare 生成后填写，继续沿用 human/rubric.md v0.2，不改变网页输出接口。

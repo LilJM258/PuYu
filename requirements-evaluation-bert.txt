@@ -1,0 +1,3 @@
+-r requirements-evaluation-feedback.txt
+bert-score==0.3.13
+transformers>=4.38,<5
