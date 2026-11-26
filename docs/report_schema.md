@@ -105,4 +105,4 @@ main 的旧报告与 mock 包含 errors 数组，每条有 type、original、cor
 
 ## 六、模型升级与评测进度
 
-当前统一Qwen3-1.7B；A/B/C/D基础版本、tokenizer、thinking和生成设置须记录，不能混用旧Qwen2.5成绩。最新小批次评分10/10、反馈9/10完整，不等于内容质量合格或网页端到端已验收。详见 [评测摘要](member5/evaluation-status.md)。
+当前统一Qwen3-1.7B；A/B/C 基础版本、tokenizer、thinking和生成设置须记录，不能混用旧Qwen2.5成绩。模型抽样评测和网页端到端验收分别记录。详见 [评测摘要](member5/evaluation-status.md)。
