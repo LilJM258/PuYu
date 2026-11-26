@@ -1,6 +1,6 @@
 # PuYu 作文批改 Web 模块
 
-Gradio 页面默认调用仓库已有的 `inference.mock_api.mock_generate_review(essay_text)`，显示其六维评分、总体反馈和局部修改建议。模拟接口返回固定演示数据，尚未接入真实模型。
+Gradio 页面默认调用仓库已有的 `inference.mock_api.mock_generate_review(essay_text)`，显示其六维评分、总体反馈和局部修改建议。模拟接口返回固定演示数据。真实模型暂定为 C，接入安排见 [Web 集成说明](docs/web-integration.md#当前真实模型接入)。
 
 ## 安装与运行
 
