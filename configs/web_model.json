@@ -1,0 +1,13 @@
+{
+  "model_id": "Qwen/Qwen3-1.7B",
+  "model_group": "A",
+  "model_path": "",
+  "adapter_path": "",
+  "revision": "main",
+  "cache_dir": ".cache/huggingface",
+  "local_files_only": true,
+  "device": "auto",
+  "context_tokens": 1024,
+  "max_new_tokens": {"scoring": 192, "feedback": 256, "correction": 512},
+  "max_time_seconds": 120
+}

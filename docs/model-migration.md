@@ -21,12 +21,12 @@
 | 文件 | 当前用途 | 使用前必须知道 |
 |---|---|---|
 | train_qlora.py | Qwen3-1.7B QLoRA训练 | 默认长度512且超长整条删除；microbatch1、累积8、学习率2e-5；max_steps默认10且恰为10时只取前20条。真实batch的labels与EOS监督依赖版本，需验收 |
-| 根inference.py | Qwen3批量生成，支持加载adapter | 已注释no_repeat_ngram_size=4，软重复惩罚1.05；硬编码test、默认 limit=10，显式传 -1 仍会漏样本；强制离线，需要本地权重缓存 |
+| 根inference.py | Qwen3共用加载/生成及兼容批量入口 | 软重复惩罚1.05；已修正limit=-1漏样本；默认test、limit=10。验证和续跑使用scripts/run_abc_evaluation.py，显式冻结样本和版本 |
 | balance_data.py | 原始评分分布重采样 | 对中间均分段随机删减、其他段重复采样；保留其他任务，不含教师混合。使用会改变样本/任务分布，不能无记录当成同一训练集 |
-| inference/model_pipeline.py | 旧Qwen2.5和旧评分字段原型 | 不作当前模型正式推理入口；本次未为替换模型而直接改队友运行代码 |
+| inference/model_pipeline.py | Qwen3三任务及桌面GPU进程接口 | 已接入本地B、计时、任务JSON校验与失败留存；本机模型配置不进入Git。自动实验另用冻结批量入口 |
 | evaluation/ | 独立评分、反馈、人评和纠错工具 | 见 [使用说明](../evaluation/README.md)，不依赖网页mock |
 
-根 inference.py 的 limit 问题可纯 Python 复现：`half = -1 // 2`得到-1，`items[:-1]`会丢掉最后一条，而非表示全量。因此当前本地3070条test会按两任务池选到3068条。小正数limit也不是三任务全覆盖，奇数会少一条，非评分池会混入纠错。使用当前 main 时，以实际入口的参数和样本清单为准。
+旧版根inference.py的负数切片问题已修正，奇数limit的余量也会保留。当前兼容入口仍默认test，且混合非评分任务；本轮验证/抽样实验通过独立入口保存明确ID、逐任务预测和输入指纹，见[复现说明](member5/abc-evaluation.md)。
 
 根脚本默认test是正式测试方向；开发联调应改成明确的validation输入。不要为“跑通”将test作为训练或调参数据。根inference.py所有生成完成才写文件、w模式会覆盖旧文件，实际运行还需避免结果丢失或覆盖。
 

@@ -10,6 +10,28 @@ EMPTY_CARDS = '<div class="empty-report">未提供有效六维评分 · 不补�
 EMPTY_PREVIEW = '<div class="empty-report">载入样例后显示颜色标注；也可在上方输入自己的作文。</div>'
 ANNOTATION_LABELS = {"error": "明确错误", "improvement": "可选改进", "strength": "表达亮点"}
 
+
+def timing_html(report):
+    if not report or not report.get("timing"):
+        return '<div class="timing-panel">生成后显示评分、反馈、纠错的耗时。</div>'
+    timing = report["timing"]
+    cards = []
+    for task, label in (("scoring", "评分"), ("feedback", "反馈"), ("correction", "纠错")):
+        seconds = timing["generation_seconds"].get(task)
+        value = f"{seconds:.3f} 秒" if seconds is not None else "未执行生成"
+        checked = timing["validation_seconds"].get(task)
+        detail = f"结构校验 {checked:.4f} 秒" if checked is not None else ""
+        cards.append(f'<div><span>{label}生成</span><strong>{value}</strong><small>{detail}</small></div>')
+    note = "本地模型实际生成耗时" if timing["kind"] == "model_generation" else "当前为模拟或外部 JSON，仅测量本页处理与校验"
+    load = timing.get("model_load_seconds")
+    if load is not None:
+        note += f" · 模型准备 {load:.3f} 秒"
+    if timing.get("shared_call_seconds") is not None:
+        note += f" · 模拟接口调用 {timing['shared_call_seconds']:.3f} 秒"
+    return '<section class="timing-panel"><div class="timing-grid">' + ''.join(cards) + (
+        f'</div><p>{note} · 本次总处理 {timing["total_seconds"]:.3f} 秒</p>'
+        '<p>总处理含准备、生成与校验，浏览器排队及传输时间另计。</p></section>')
+
 COLOR_LEGEND = '''<aside class="color-legend" aria-label="颜色说明">
   <strong>颜色说明</strong><div class="legend-items">
   <span><i class="legend-swatch annotation-error"></i>红色：原文明确错误</span>

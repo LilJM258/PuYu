@@ -1,0 +1,5 @@
+-r requirements-web.txt
+torch>=2.6,<3
+transformers>=4.37,<6
+peft>=0.17,<1
+accelerate>=1,<2

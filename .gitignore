@@ -16,3 +16,21 @@ results/review_week1/
 .venv-evaluation/
 
 .DS_Store
+desktop-profile/
+logs/
+.cache/
+build/
+dist/
+models/
+configs/web_model.local.json
+results/web_week2/
+results/human_week2/
+results/human_week34/
+results/human_review/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.zip
+*.exe
