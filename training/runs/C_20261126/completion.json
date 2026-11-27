@@ -1,0 +1,10 @@
+{
+  "completed": true,
+  "phase": "train",
+  "global_step": 1500,
+  "adapter_path": "models/C",
+  "adapter_sha256": "7e1c4feb395f060808cfe73399cafd9e1e3054dd82000cd48c50d8cbe7fe27f6",
+  "finished_at": "2026-11-26T00:41:43.643045+00:00",
+  "elapsed_seconds": 28420.6859247,
+  "data_sha256": "b68312fb3dc67dc6c2a213800dc2a07420bc09df6bd69d175ee00f25355276f6"
+}

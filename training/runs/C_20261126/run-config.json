@@ -1,0 +1,54 @@
+{
+  "phase": "train",
+  "started_at": "2026-11-25T16:48:52.616724+00:00",
+  "source_data": "training_data_v1/train_C_fixed.jsonl",
+  "source_sha256": "b68312fb3dc67dc6c2a213800dc2a07420bc09df6bd69d175ee00f25355276f6",
+  "original_script_sha256": "0971d5c828d063dd378ee40901f2674dec01463cb0ab7ef3e93d3469b015575b",
+  "base_model": "Qwen/Qwen3-1.7B",
+  "from_official_model": true,
+  "resume_checkpoint": null,
+  "adapter_B_used_as_start": false,
+  "resampling_performed": false,
+  "post_filter_composition": [
+    {
+      "category": "original",
+      "task": "essay_feedback",
+      "rows": 387
+    },
+    {
+      "category": "original",
+      "task": "essay_scoring",
+      "rows": 1328
+    },
+    {
+      "category": "original",
+      "task": "grammar_correction",
+      "rows": 1142
+    },
+    {
+      "category": "teacher",
+      "task": "essay_feedback",
+      "rows": 134
+    }
+  ],
+  "max_steps": 1500,
+  "max_length": 512,
+  "learning_rate": 2e-05,
+  "microbatch": 1,
+  "gradient_accumulation": 8,
+  "seed": 42,
+  "lora_r": 8,
+  "lora_alpha": 16,
+  "lora_dropout": 0.05,
+  "optimizer": "paged_adamw_8bit",
+  "versions": {
+    "torch": "2.9.1+cu128",
+    "transformers": "5.22.2",
+    "peft": "0.21.2",
+    "trl": "1.18.2",
+    "datasets": "5.2.0",
+    "bitsandbytes": "0.50.2",
+    "accelerate": "1.15.0"
+  },
+  "gpu": "NVIDIA GeForce RTX 5050 Laptop GPU"
+}

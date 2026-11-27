@@ -1,0 +1,71 @@
+{
+  "base_model": "Qwen/Qwen3-1.7B",
+  "base_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "files": [
+    {
+      "path": "models/B/adapter_config.json",
+      "sha256": "3515eb9e36b856591acadc072888abfa2a4f20cf356e2524000dde1ff601ff67",
+      "bytes": 1138
+    },
+    {
+      "path": "models/B/adapter_model.safetensors",
+      "sha256": "f0aa2f02396af98ed81c2f5deab794a2708dfe9033a35cb8eeda464cad48d95a",
+      "bytes": 3226080
+    },
+    {
+      "path": "models/B/tokenizer.json",
+      "sha256": "be75606093db2094d7cd20f3c2f385c212750648bd6ea4fb2bf507a6a4c55506",
+      "bytes": 11422650
+    },
+    {
+      "path": "models/B/tokenizer_config.json",
+      "sha256": "4ca7c289e60b2f3f94e5708bcbb791ec47145e6f0973c287d716cca2a3236ef0",
+      "bytes": 721
+    },
+    {
+      "path": "models/B/chat_template.jinja",
+      "sha256": "51fa65c79bb57f058dc7ef8734884bd325fe9d45bb03a61bfef59785d3bc2da9",
+      "bytes": 4256
+    },
+    {
+      "path": "models/B/README.md",
+      "sha256": "9d3e440be4c753d92208fdea67d2a441defc0558e2ef5e8e451e6ba8b48fa8a4",
+      "bytes": 1519
+    },
+    {
+      "path": "models/C/adapter_config.json",
+      "sha256": "aae92681838721a914fbd95389ceb75b169b3cd0a295ba50ec7f261e91dbc550",
+      "bytes": 1138
+    },
+    {
+      "path": "models/C/adapter_model.safetensors",
+      "sha256": "7e1c4feb395f060808cfe73399cafd9e1e3054dd82000cd48c50d8cbe7fe27f6",
+      "bytes": 3226080
+    },
+    {
+      "path": "models/C/tokenizer.json",
+      "sha256": "be75606093db2094d7cd20f3c2f385c212750648bd6ea4fb2bf507a6a4c55506",
+      "bytes": 11422650
+    },
+    {
+      "path": "models/C/tokenizer_config.json",
+      "sha256": "35c2835323d20673e95e17ffc966ae535abf55c38bb2d38624f16d96370adeb1",
+      "bytes": 720
+    },
+    {
+      "path": "models/C/chat_template.jinja",
+      "sha256": "51fa65c79bb57f058dc7ef8734884bd325fe9d45bb03a61bfef59785d3bc2da9",
+      "bytes": 4256
+    },
+    {
+      "path": "models/C/README.md",
+      "sha256": "6517188fcbf26ca9f8201ef356d7164c2ff43a2310453c3d139ddcfa313fcd4f",
+      "bytes": 1527
+    },
+    {
+      "path": "training_data_v1/train_C_fixed.jsonl",
+      "sha256": "b68312fb3dc67dc6c2a213800dc2a07420bc09df6bd69d175ee00f25355276f6",
+      "bytes": 35121147
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "frozen_path": "training_data_v1/train_C_fixed.jsonl",
+  "sha256": "b68312fb3dc67dc6c2a213800dc2a07420bc09df6bd69d175ee00f25355276f6",
+  "rows": 10752,
+  "groups": [
+    {
+      "source": "LEAF",
+      "task": "essay_feedback",
+      "split": "train",
+      "rows": 4018
+    },
+    {
+      "source": "ELLIPSE",
+      "task": "essay_scoring",
+      "split": "train",
+      "rows": 3520
+    },
+    {
+      "source": "synthetic",
+      "task": "essay_feedback",
+      "split": "train",
+      "rows": 1500
+    },
+    {
+      "source": "WI_LOCNESS",
+      "task": "grammar_correction",
+      "split": "train",
+      "rows": 1714
+    }
+  ],
+  "duplicate_id_groups": 0,
+  "user_decision": "Train this exact supplied file; retain actual post-filter proportions; no resampling",
+  "original_attachment_name": "train_C_fixed(1).jsonl"
+}

@@ -56,6 +56,8 @@ python scripts/run_abc_evaluation.py run --protocol results/runs/abc_v1/protocol
 
 真实作文、原始预测和模型权重沿用项目本地保存约定。GitHub 提交可复用源码、测试和说明；内部交付包另行共享，不上传整个项目目录。
 
+2026-11-27交付补充：团队已授权将两套适配器及C实际训练输入通过Git LFS放入仓库，分别见`models/B/`、`models/C/`及`training_data_v1/train_C_fixed.jsonl`。先执行`git lfs pull`获取本体；完整基础模型不重复上传。原始自动预测和真人材料仍按内部交付保管。训练配置与loss摘要位于`training/runs/C_20261126/`，机器绝对路径已改为仓库路径或明确标为省略，原始证据保持在本地核对包中。
+
 评分保留六维小数，报告 MAE/RMSE/QWK 与补充失败惩罚 MAE。反馈报告 ROUGE/BLEU 和失败率，相似度不能代替内容正确性；不预设 C 一定提升，也不讨论 D 的筛选效果。
 
 ## 检查

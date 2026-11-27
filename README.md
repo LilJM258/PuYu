@@ -8,7 +8,7 @@
 
 ## 反馈格式已统一为 LEAF
 
-当前工程交付：已接入本地 Qwen3 模型 B，并提供“英语作文批改工作台”桌面窗口、任务耗时、报告导出与人工复核。详见 [6号系统交付](docs/member6-week34.md)、[A/B/C复现入口](docs/member5/abc-evaluation.md) 和 [人工评价操作](docs/human-evaluation.md)。正式真人评价由6号与另一位评价者独立完成，评分尚未填写；权重、EXE、真实预测和评价材料通过内部核对包交付。
+当前工程交付：已接入本地 Qwen3 模型 B，并提供“英语作文批改工作台”桌面窗口、任务耗时、报告导出与人工复核。详见 [6号系统交付](docs/member6-week34.md)、[A/B/C复现入口](docs/member5/abc-evaluation.md) 和 [人工评价操作](docs/human-evaluation.md)。2026-11-27按团队交付要求，将[B/C独立适配器目录](models/README.md)和[C实际训练数据](training_data_v1/README-C.md)通过Git LFS纳入仓库；官方基础模型仍从原来源获取。EXE、真实预测及真人材料保留为内部交付，真人分数尚未填写。
 
 **1、2、3、4、5、6 号请先读 [反馈格式与成员交接说明](docs/feedback-format-handoff.md)。** 教师反馈统一输出 `{"feedback":"一段英文反馈"}`，与 LEAF 使用相同任务指令；不要求拆分原文位置、改法或解释字段。3 号直接按新格式生成，6 号按新接口展示整段反馈。
 

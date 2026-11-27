@@ -1,0 +1,15 @@
+{
+  "global_step": 1500,
+  "max_steps": 1500,
+  "metrics": {
+    "train_runtime": 28234.4046,
+    "train_samples_per_second": 0.425,
+    "train_steps_per_second": 0.053,
+    "total_flos": 3.99973418629632e+16,
+    "train_loss": 0.9324602098464966,
+    "epoch": 4.010698762955533
+  },
+  "peak_gpu_allocated_MiB": 2658.63037109375,
+  "peak_gpu_reserved_MiB": 3402.0,
+  "lora_B_nonzero": true
+}

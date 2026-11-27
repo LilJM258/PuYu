@@ -34,3 +34,23 @@ results/human_review/
 *.ckpt
 *.zip
 *.exe
+
+# Approved B/C delivery; all other local model folders remain ignored.
+!models/
+models/**
+!models/README.md
+!models/manifest.json
+!models/B/
+!models/C/
+!models/B/README.md
+!models/B/adapter_config.json
+!models/B/adapter_model.safetensors
+!models/B/tokenizer.json
+!models/B/tokenizer_config.json
+!models/B/chat_template.jinja
+!models/C/README.md
+!models/C/adapter_config.json
+!models/C/adapter_model.safetensors
+!models/C/tokenizer.json
+!models/C/tokenizer_config.json
+!models/C/chat_template.jinja
