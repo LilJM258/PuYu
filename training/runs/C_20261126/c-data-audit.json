@@ -1,0 +1,92 @@
+{
+  "source_file": "training_data_v1/train_C_fixed.jsonl",
+  "source_sha256": "b68312fb3dc67dc6c2a213800dc2a07420bc09df6bd69d175ee00f25355276f6",
+  "rows": 10752,
+  "before_filter": [
+    {
+      "category": "original",
+      "task": "essay_feedback",
+      "rows": 4018
+    },
+    {
+      "category": "original",
+      "task": "essay_scoring",
+      "rows": 3520
+    },
+    {
+      "category": "original",
+      "task": "grammar_correction",
+      "rows": 1714
+    },
+    {
+      "category": "teacher",
+      "task": "essay_feedback",
+      "rows": 1500
+    }
+  ],
+  "max_length": 512,
+  "after_filter": [
+    {
+      "category": "original",
+      "task": "essay_feedback",
+      "rows": 387
+    },
+    {
+      "category": "original",
+      "task": "essay_scoring",
+      "rows": 1328
+    },
+    {
+      "category": "original",
+      "task": "grammar_correction",
+      "rows": 1142
+    },
+    {
+      "category": "teacher",
+      "task": "essay_feedback",
+      "rows": 134
+    }
+  ],
+  "removed": [
+    {
+      "category": "original",
+      "task": "essay_feedback",
+      "rows": 3631
+    },
+    {
+      "category": "original",
+      "task": "essay_scoring",
+      "rows": 2192
+    },
+    {
+      "category": "original",
+      "task": "grammar_correction",
+      "rows": 572
+    },
+    {
+      "category": "teacher",
+      "task": "essay_feedback",
+      "rows": 1366
+    }
+  ],
+  "kept_total": 2991,
+  "removed_total": 7761,
+  "missing_original_rows": 0,
+  "changed_or_unknown_original_rows": [],
+  "duplicate_id_groups": 0,
+  "normalized_essay_duplicate_groups": 0,
+  "structural_issues": [],
+  "validation_test_overlaps": [],
+  "teacher_anchors_outside_train": [],
+  "teacher_human_review_status": {
+    "pending": 1500
+  },
+  "not_proven": [
+    "semantic/near-duplicate independence",
+    "teacher feedback correctness",
+    "equality to B training data after B resampling",
+    "external teacher prompt context beyond exported metadata"
+  ],
+  "length_filter_is_preflight_not_training_log": true,
+  "training_performed": false
+}

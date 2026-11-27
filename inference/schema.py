@@ -5,10 +5,12 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
+from inference.context import MAX_ESSAY_WORDS, count_words
+
 MAX_ESSAY_CHARS = 12_000
 DIMENSIONS = {
-    "cohesion": "篇章衔接", "syntax": "句法", "vocabulary": "词汇",
-    "phraseology": "短语表达", "grammar": "语法", "conventions": "书写规范",
+    "cohesion": "连贯性", "syntax": "句法", "vocabulary": "词汇",
+    "phraseology": "措辞", "grammar": "语法", "conventions": "规范",
 }
 Score = Annotated[float, Field(ge=1, le=5, allow_inf_nan=False)]
 
@@ -75,6 +77,9 @@ def check_essay(essay: str) -> None:
         raise ValueError("请先输入英文作文，或点击“载入样例”。")
     if len(essay) > MAX_ESSAY_CHARS:
         raise ValueError(f"作文超过 {MAX_ESSAY_CHARS:,} 个字符；原型不自动截断，请缩短后重试。")
+    words = count_words(essay)
+    if words > MAX_ESSAY_WORDS:
+        raise ValueError(f"作文为 {words} 词，超过 {MAX_ESSAY_WORDS} 词上限。请缩短后重试，原文未截断。")
 
 
 def _unique_object(pairs):

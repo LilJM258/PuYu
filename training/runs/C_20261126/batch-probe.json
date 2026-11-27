@@ -1,0 +1,61 @@
+{
+  "default_collator": "DataCollatorForLanguageModeling",
+  "default_padded_batch": {
+    "passed": true,
+    "rows": [
+      {
+        "prefix_tokens": 228,
+        "target_tokens": 282,
+        "user_prefix_masked": true,
+        "complete_target_supervised": true,
+        "real_eos_supervised": true,
+        "padding_masked": true
+      },
+      {
+        "prefix_tokens": 227,
+        "target_tokens": 214,
+        "user_prefix_masked": true,
+        "complete_target_supervised": true,
+        "real_eos_supervised": true,
+        "padding_masked": true
+      }
+    ]
+  },
+  "selected_collator": "DataCollatorForLanguageModeling",
+  "padded_batch": {
+    "passed": true,
+    "rows": [
+      {
+        "prefix_tokens": 228,
+        "target_tokens": 282,
+        "user_prefix_masked": true,
+        "complete_target_supervised": true,
+        "real_eos_supervised": true,
+        "padding_masked": true
+      },
+      {
+        "prefix_tokens": 227,
+        "target_tokens": 214,
+        "user_prefix_masked": true,
+        "complete_target_supervised": true,
+        "real_eos_supervised": true,
+        "padding_masked": true
+      }
+    ]
+  },
+  "actual_trainer_batch": {
+    "passed": true,
+    "rows": [
+      {
+        "prefix_tokens": 167,
+        "target_tokens": 157,
+        "user_prefix_masked": true,
+        "complete_target_supervised": true,
+        "real_eos_supervised": true,
+        "padding_masked": true
+      }
+    ]
+  },
+  "fresh_lora_B_all_zero": true,
+  "trainable_parameter_count": 1605632
+}

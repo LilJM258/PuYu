@@ -35,6 +35,12 @@
 .revision-changed { background-color: #dbeafe; color: #1e40af; }
 .team-edit { padding: 12px 0; border-bottom: 1px solid var(--border-color-primary); color: var(--body-text-color); overflow-wrap: anywhere; }
 .team-edit:last-child { border-bottom: 0; }
+.input-limit { font-size: 13px; line-height: 1.8; padding: 10px 0; color: var(--body-text-color); }
+.timing-panel { padding: 14px; margin: 12px 0; border: 1px solid var(--border-color-primary); border-radius: 12px; color: var(--body-text-color); }
+.timing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.timing-grid span, .timing-grid strong, .timing-grid small { display: block; overflow-wrap: anywhere; }
+.timing-grid strong { margin: 5px 0; font-size: 17px; }
+.timing-panel p, .timing-grid small { font-size: 12px; line-height: 1.7; color: var(--body-text-color-subdued); }
 .team-edit p { margin: 5px 0; line-height: 1.8; }
 .team-edit del { background: #fee2e2; color: #991b1b; }
 .team-edit ins { background: #dcfce7; color: #166534; text-decoration: none; }

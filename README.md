@@ -8,6 +8,8 @@
 
 ## 反馈格式已统一为 LEAF
 
+当前工程交付：已接入本地 Qwen3 模型 B，并提供“英语作文批改工作台”桌面窗口、任务耗时、报告导出与人工复核。详见 [6号系统交付](docs/member6-week34.md)、[A/B/C复现入口](docs/member5/abc-evaluation.md) 和 [人工评价操作](docs/human-evaluation.md)。2026-11-27按团队交付要求，将[B/C独立适配器目录](models/README.md)和[C实际训练数据](training_data_v1/README-C.md)通过Git LFS纳入仓库；官方基础模型仍从原来源获取。EXE、真实预测及真人材料保留为内部交付，真人分数尚未填写。
+
 **1、2、3、4、5、6 号请先读 [反馈格式与成员交接说明](docs/feedback-format-handoff.md)。** 教师反馈统一输出 `{"feedback":"一段英文反馈"}`，与 LEAF 使用相同任务指令；不要求拆分原文位置、改法或解释字段。3 号直接按新格式生成，6 号按新接口展示整段反馈。
 
 ## 📁 目录结构说明
@@ -56,7 +58,7 @@ essay-review/
 
 新合成数据统一模仿 LEAF：`{"feedback":"一段英文反馈"}`，任务指令与 LEAF 一致。新配置为 `configs/deepseek_leaf.json` / `configs/teacher.leaf.example.json`，见 [合成模块说明](synthesis/README.md)。C 使用基础格式合格的教师反馈。人工反馈评价仍按原分工开展。旧细粒度批次保留为历史版本，不直接混入新训练。
 
-训练/评测讨论见 [5 号实验方案](docs/member5/experiment-plan.md) 和 [混合方案](docs/member5/data-mixing-plan.md)。Web 已支持共享模拟报告与独立任务 JSON 联调，真实模型接口仍需集成；展示层协议与教师训练标签分开。正式教师数据进度以实际交付为准；详见上方交接说明。
+训练/评测讨论见 [5 号实验方案](docs/member5/experiment-plan.md) 和 [混合方案](docs/member5/data-mixing-plan.md)。Web和桌面支持共享模拟接口及真实本地模型B三任务报告；展示层协议与教师训练标签分开。C的独立训练和抽样自动评测已完成，进度见评测摘要。
 
 ## 三任务评测（2026-11-09 开发，2026-11-20 交付功能分支）
 
@@ -71,8 +73,8 @@ essay-review/
 GitHub main 在 `8020036` 已包含三任务评测工具。复跑 6 号的实验另需取得模型适配器、原始预测和训练日志。
 
 - `train_qlora.py`：main 带入的 Qwen3 训练入口，默认长度512；正式使用前核查过滤后各任务数量、实际训练batch的labels及启动参数。
-- 根目录 `inference.py`：Qwen3 批量推理入口，已注释4-token禁重复；当前硬编码 test，`--limit=-1` 会每个分池漏最后一条，不能直接当验证集或完整测试入口。详见迁移说明。
+- 根目录 `inference.py`：复用Qwen3加载与生成函数，已修正`--limit=-1`漏样本；默认仍读取test。验证及可续跑同条件比较使用`scripts/run_abc_evaluation.py`，显式冻结输入、版本和样本范围。
 - `balance_data.py`：对原始评分分布做删减/复制的重采样脚本，**不是**2号的教师数据混合程序；其输出与原始数据版本、采样倍数须单独记录。
-- `inference/model_pipeline.py`：仍为旧 Qwen2.5 及旧字段原型，不作为当前正式评分入口。
+- `inference/model_pipeline.py`：当前Qwen3三任务本地接入口，支持B Adapter、任务校验、耗时和独立GPU进程；机器路径使用被Git忽略的本机配置。
 
 跨电脑使用时，从 6 号的核对包获取权重和逐条运行记录，仓库提供 [不含作文原文的评测摘要](docs/member5/evaluation-status.md)。
